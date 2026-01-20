@@ -12,11 +12,13 @@ import {
     Settings,
     Store,
     PlusCircle,
-    Menu
+    Menu,
+    Layers
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useSettingsStore } from '@/stores/settings-store';
 
 // Navigation Items matching Reference
 const navItems = [
@@ -37,6 +39,12 @@ const navItems = [
         subtitle: '(Inventory)',
         href: '/products',
         icon: Package,
+    },
+    {
+        title: 'ক্যাটাগরি',
+        subtitle: '(Categories)',
+        href: '/categories',
+        icon: Layers,
     },
     {
         title: 'রিপোর্ট',
@@ -60,6 +68,7 @@ const navItems = [
 
 export function Sidebar() {
     const pathname = usePathname();
+    const { shopName, shopAddress } = useSettingsStore();
 
     const SidebarContent = () => (
         <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
@@ -70,8 +79,8 @@ export function Sidebar() {
                         <Store className="h-6 w-6" />
                     </div>
                     <div>
-                        <h1 className="text-slate-900 dark:text-white text-lg font-bold leading-tight">শপ ম্যানেজার</h1>
-                        <p className="text-slate-500 dark:text-slate-400 text-xs">Bangladesh Shop Ltd.</p>
+                        <h1 className="text-slate-900 dark:text-white text-lg font-bold leading-tight">{shopName}</h1>
+                        <p className="text-slate-500 dark:text-slate-400 text-xs">{shopAddress}</p>
                     </div>
                 </div>
             </div>

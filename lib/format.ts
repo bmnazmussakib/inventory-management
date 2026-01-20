@@ -6,17 +6,26 @@ export const bnNumber = (n: number | string): string => {
 /**
  * Format price based on locale
  */
+import { useSettingsStore } from '@/stores/settings-store';
+
+/**
+ * Format price based on locale and settings
+ */
 export const formatPrice = (value: number, locale: string): string => {
     const safeValue = value || 0;
+    const { currency } = useSettingsStore.getState();
+
+    // Extract symbol if present in "Code (Symbol)" format, e.g., "BDT (৳)" -> "৳"
+    // or just use the full string if no match.
+    const currencySymbolMatch = currency.match(/\(([^)]+)\)/);
+    const symbol = currencySymbolMatch ? currencySymbolMatch[1] : currency;
+
     const formatted = safeValue.toLocaleString(locale === 'bn' ? 'bn-BD' : 'en-US', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     });
 
-    if (locale === 'bn') {
-        return `৳ ${formatted}`;
-    }
-    return `BDT ${formatted}`;
+    return `${symbol} ${formatted}`;
 };
 
 export const toBanglaNumber = bnNumber;

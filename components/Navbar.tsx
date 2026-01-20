@@ -89,11 +89,7 @@ export function Navbar() {
 
                 {/* Language / Locale Switcher - Custom Style */}
                 <div className="hidden sm:block">
-                    {/* Simplified visual wrapper around LocaleSwitcher or manual implementation */}
-                    <button className="text-sm font-semibold text-primary bg-primary/5 px-3 py-1.5 rounded-lg border border-primary/10 hover:bg-primary/10 transition-colors">
-                        BN/EN
-                    </button>
-                    {/* Note: Real LocaleSwitcher functionality would go here. I'm keeping the visual "Button" as per reference. */}
+                    <LocaleSwitcher />
                 </div>
 
                 {/* Icons Group */}
@@ -102,7 +98,7 @@ export function Navbar() {
                     <ThemeToggle />
 
                     {/* Notifications */}
-                    <DropdownMenu>
+                    <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                             <button className="relative p-2 text-slate-500 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                                 <Bell className="h-5 w-5" />
@@ -122,7 +118,7 @@ export function Navbar() {
                     </DropdownMenu>
 
                     {/* Profile */}
-                    <DropdownMenu>
+                    <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                             <div className="h-10 w-10 rounded-full bg-slate-200 border-2 border-white dark:border-slate-700 shadow-sm overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
                                 <img

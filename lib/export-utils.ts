@@ -75,6 +75,10 @@ export const exportToPDF = (data: any[], filename: string, title: string) => {
     doc.save(filename);
 };
 
+import { useSettingsStore } from '@/stores/settings-store';
+
+// ... imports
+
 /**
  * Export receipt to PDF
  */
@@ -84,6 +88,10 @@ export const exportReceiptToPDF = (sale: any, filename: string) => {
         unit: 'mm',
         format: [80, 250]
     });
+
+    const { shopName, shopAddress, shopPhone, invoiceFooter } = useSettingsStore.getState();
+
+    // ... dashed line helpers ...
 
     const drawDashedLine = (y: number) => {
         if ((doc as any).setLineDashPattern) {
@@ -117,14 +125,14 @@ export const exportReceiptToPDF = (sale: any, filename: string) => {
     // Header
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
-    doc.text('Inventory BD', 40, currentY, { align: 'center' });
+    doc.text(shopName, 40, currentY, { align: 'center' });
 
     currentY += 5;
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.text('Dhanmondi, Dhaka, Bangladesh', 40, currentY, { align: 'center' });
+    doc.text(shopAddress, 40, currentY, { align: 'center' });
     currentY += 4;
-    doc.text('Phone: +880 1234-567890', 40, currentY, { align: 'center' });
+    doc.text(`Phone: ${shopPhone}`, 40, currentY, { align: 'center' });
 
     currentY += 3;
     drawDashedLine(currentY);
@@ -235,11 +243,11 @@ export const exportReceiptToPDF = (sale: any, filename: string) => {
     doc.setFontSize(7);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100, 100, 100);
-    doc.text('Thank you for shopping with us!', 40, currentY, { align: 'center' });
+    doc.text(`${invoiceFooter || 'Thank you for shopping with us!'}`, 40, currentY, { align: 'center' });
 
     currentY += 5;
     doc.setFontSize(6);
-    doc.text('Powered by Inventory BD', 40, currentY, { align: 'center' });
+    doc.text(`Powered by ${shopName}`, 40, currentY, { align: 'center' });
 
     doc.save(filename);
 };

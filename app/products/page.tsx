@@ -21,6 +21,7 @@ import {
 import { bnNumber, formatPrice } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { BulkUploadDialog } from '@/components/BulkUploadDialog';
 
 export default function ProductList() {
     const t = useTranslations('Products'); // Assuming keys exist or fallback
@@ -40,13 +41,14 @@ export default function ProductList() {
     const filteredProducts = useMemo(() => {
         return products.filter(product => {
             const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (product.barcode && product.barcode.includes(searchTerm));
+                (product.ean && product.ean.includes(searchTerm));
             const matchesCategory = selectedCategory ? product.categoryId === Number(selectedCategory) : true;
             return matchesSearch && matchesCategory;
         });
     }, [products, searchTerm, selectedCategory]);
 
-    const getCategoryName = (id: number) => {
+    const getCategoryName = (id?: number) => {
+        if (!id) return 'Uncategorized';
         return categories.find(c => c.id === id)?.name || 'Uncategorized';
     };
 
@@ -59,6 +61,7 @@ export default function ProductList() {
                     <h2 className="text-xl font-bold text-slate-800 dark:text-white">পণ্য তালিকা / Product List</h2>
                 </div>
                 <div className="flex items-center gap-4">
+                    <BulkUploadDialog />
                     <Link href="/products/add">
                         <button className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-sm active:scale-95 text-sm">
                             <PlusCircle className="h-5 w-5" />
@@ -188,7 +191,7 @@ export default function ProductList() {
                                         </div>
                                         <div className="text-right">
                                             <p className="text-xs text-slate-400 mb-0.5">মূল্য</p>
-                                            <p className="text-xl font-bold text-primary">{formatPrice(product.price, locale)}</p>
+                                            <p className="text-xl font-bold text-primary">{formatPrice(product.sellPrice, locale)}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -216,7 +219,7 @@ export default function ProductList() {
                                     </div>
                                     <div className="text-right w-20">
                                         <p className="text-xs text-slate-500">Price</p>
-                                        <p className="font-bold text-primary">{formatPrice(product.price, locale)}</p>
+                                        <p className="font-bold text-primary">{formatPrice(product.sellPrice, locale)}</p>
                                     </div>
                                     <Button variant="ghost" size="icon">
                                         <MoreVertical className="h-4 w-4" />

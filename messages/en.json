@@ -266,10 +266,45 @@
     "Settings": {
         "title": "Application Settings",
         "description": "Configure your shop settings and preferences.",
-        "shopName": "Shop Name",
-        "shopAddress": "Shop Address",
-        "currency": "Currency",
-        "taxRate": "Tax Rate (%)",
-        "saveSettings": "Save Settings"
+        "tabs": {
+            "general": "General",
+            "sales": "Sales & Invoice",
+            "data": "Data Management",
+            "appearance": "Appearance"
+        },
+        "general": {
+            "title": "Shop Information",
+            "description": "Manage your shop's core details.",
+            "shopName": "Shop Name",
+            "shopAddress": "Address",
+            "shopPhone": "Phone",
+            "shopEmail": "Email"
+        },
+        "sales": {
+            "title": "Sales Preferences",
+            "description": "Customize how you sell and bill.",
+            "currency": "Currency",
+            "taxRate": "Tax Rate (%)",
+            "invoiceFooter": "Invoice Footer Message",
+            "invoiceFooterPlaceholder": "e.g. Thank you for your business!"
+        },
+        "data": {
+            "title": "Data & Storage",
+            "description": "Manage your locally stored data.",
+            "export": "Export Data",
+            "exportDesc": "Download a backup of all your data (JSON).",
+            "import": "Import Data",
+            "clear": "Clear All Data",
+            "clearDesc": "Permanently delete all products and sales history. This cannot be undone.",
+            "dangerZone": "Danger Zone"
+        },
+        "appearance": {
+            "title": "Look & Feel",
+            "description": "Customize the application interface.",
+            "language": "Language",
+            "theme": "Theme Mode"
+        },
+        "saveSettings": "Save Changes",
+        "saved": "Settings saved successfully"
     }
 }

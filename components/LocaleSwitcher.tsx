@@ -26,7 +26,7 @@ export function LocaleSwitcher() {
     };
 
     return (
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-muted-foreground rounded-xl hover:bg-muted relative">
                     <Globe className="h-5 w-5" />

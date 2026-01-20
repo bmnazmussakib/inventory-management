@@ -23,9 +23,13 @@ interface ReceiptProps {
     className?: string;
 }
 
+
+import { useSettingsStore } from '@/stores/settings-store';
+
 export const Receipt = React.forwardRef<HTMLDivElement, ReceiptProps>(({ sale, className }, ref) => {
     const t = useTranslations('Sales');
     const locale = useLocale();
+    const { shopName, shopAddress, shopPhone, invoiceFooter } = useSettingsStore();
 
     return (
         <div
@@ -37,9 +41,9 @@ export const Receipt = React.forwardRef<HTMLDivElement, ReceiptProps>(({ sale, c
         >
             {/* Header */}
             <div className="text-center mb-6">
-                <h1 className="text-xl font-bold uppercase tracking-wider mb-1">Inventory BD</h1>
-                <p className="text-[10px] text-gray-600">Dhanmondi, Dhaka, Bangladesh</p>
-                <p className="text-[10px] text-gray-600">Phone: +880 1234-567890</p>
+                <h1 className="text-xl font-bold uppercase tracking-wider mb-1">{shopName}</h1>
+                <p className="text-[10px] text-gray-600">{shopAddress}</p>
+                <p className="text-[10px] text-gray-600">Phone: {shopPhone}</p>
                 <div className="border-b border-dashed border-gray-400 my-4" />
                 <h2 className="text-sm font-bold font-bengali">{t('receipt.title')}</h2>
             </div>
@@ -117,9 +121,9 @@ export const Receipt = React.forwardRef<HTMLDivElement, ReceiptProps>(({ sale, c
                 <p className="text-[10px] font-bold leading-tight break-words">
                     {locale === 'bn' ? 'ধন্যবাদ! আবার আসবেন।' : 'Thank you! Come again.'}
                 </p>
-                <p className="text-[9px] text-gray-500 leading-tight">Thank you for shopping with us!</p>
+                <p className="text-[9px] text-gray-500 leading-tight">{invoiceFooter || 'Thank you for shopping with us!'}</p>
                 <div className="pt-2">
-                    <p className="text-[8px] opacity-40">Powered by Inventory BD</p>
+                    <p className="text-[8px] opacity-40">Powered by {shopName}</p>
                 </div>
             </div>
         </div>

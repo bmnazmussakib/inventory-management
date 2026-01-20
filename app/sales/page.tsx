@@ -53,11 +53,14 @@ interface CartItem {
     scheme?: string;
 }
 
+import { useSettingsStore } from '@/stores/settings-store';
+
 export default function SalesPage() {
     const t = useTranslations('Sales');
     const commonT = useTranslations('Common');
     const nt = useTranslations('Notifications');
     const locale = useLocale();
+    const { taxRate } = useSettingsStore(); // Reactive tax rate
 
     const { products, fetchProducts } = useProductStore();
     const { categories, fetchCategories } = useCategoryStore();
@@ -157,11 +160,15 @@ export default function SalesPage() {
     };
 
     const subtotal = cart.reduce((sum, item) => sum + (item.qty * item.discountedPrice), 0);
+
     const billDiscountAmount = useMemo(() => {
         if (billDiscountType === 'amount') return billDiscountValue;
         return (subtotal * billDiscountValue) / 100;
     }, [subtotal, billDiscountType, billDiscountValue]);
-    const total = Math.max(0, subtotal - billDiscountAmount);
+
+    const taxableAmount = Math.max(0, subtotal - billDiscountAmount);
+    const taxAmount = (taxableAmount * taxRate) / 100;
+    const total = taxableAmount + taxAmount;
 
     const handleCheckout = async () => {
         if (cart.length === 0) return;
@@ -178,6 +185,7 @@ export default function SalesPage() {
                 })),
                 subtotal,
                 discount: billDiscountAmount,
+                tax: (Math.max(0, subtotal - billDiscountAmount) * taxRate) / 100,
                 total,
                 paymentMethod
             };
@@ -405,6 +413,11 @@ export default function SalesPage() {
                     <div className="flex justify-between text-sm text-green-600 font-medium">
                         <span>Discount</span>
                         <span>- {formatPrice(billDiscountAmount, locale)}</span>
+                    </div>
+
+                    <div className="flex justify-between text-sm text-slate-500">
+                        <span>Tax ({taxRate}%)</span>
+                        <span>+ {formatPrice(((Math.max(0, subtotal - billDiscountAmount) * taxRate) / 100), locale)}</span>
                     </div>
 
                     <div className="pt-3 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">
