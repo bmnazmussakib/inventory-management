@@ -7,7 +7,8 @@ export const bnNumber = (n: number | string): string => {
  * Format price based on locale
  */
 export const formatPrice = (value: number, locale: string): string => {
-    const formatted = value.toLocaleString(locale === 'bn' ? 'bn-BD' : 'en-US', {
+    const safeValue = value || 0;
+    const formatted = safeValue.toLocaleString(locale === 'bn' ? 'bn-BD' : 'en-US', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
     });
