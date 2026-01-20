@@ -4,39 +4,32 @@ import { useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { useProductStore } from '@/stores/product-store';
-import { useCategoryStore } from '@/stores/category-store';
 import { useSalesStore } from '@/stores/sales-store';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Package,
+  Banknote,
   TrendingUp,
   AlertTriangle,
-  Calendar,
-  Clock,
+  ShoppingBag,
   MoreHorizontal,
+  Search,
   ArrowUpRight,
-  ShoppingCart,
-  Zap,
-  History as HistoryIcon
+  Package,
+  Soup, // For 'Soap'
+  GlassWater, // For 'Drink'
+  Utensils // For 'Food'
 } from 'lucide-react';
 import { bnNumber, formatPrice } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  AreaChart,
-  Area
 } from 'recharts';
+import { Button } from '@/components/ui/button';
 
 export default function Dashboard() {
   const t = useTranslations('Dashboard');
@@ -44,73 +37,70 @@ export default function Dashboard() {
   const locale = useLocale();
 
   const { products, fetchProducts } = useProductStore();
-  const { categories, fetchCategories } = useCategoryStore();
   const { sales, fetchSales } = useSalesStore();
 
   useEffect(() => {
     fetchProducts();
     fetchSales();
-    fetchCategories();
-  }, [fetchProducts, fetchSales, fetchCategories]);
+  }, [fetchProducts, fetchSales]);
 
-  // Dynamic Calculations
+  // --- Dynamic Stats Calculations ---
   const stats = useMemo(() => {
-    const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
     const today = new Date().setHours(0, 0, 0, 0);
     const todaySalesData = sales.filter(s => new Date(s.date).setHours(0, 0, 0, 0) === today);
     const todayTotal = todaySalesData.reduce((sum, s) => sum + s.total, 0);
-    const lowStockCount = products.filter(p => p.stock <= p.reorderLevel).length;
-    const now = new Date();
-    const thirtyDaysLater = new Date();
-    thirtyDaysLater.setDate(now.getDate() + 30);
 
-    const expiringSoonCount = products.filter(p => {
-      if (!p.expiryDate) return false;
-      const expiry = new Date(p.expiryDate);
-      return expiry <= thirtyDaysLater;
-    }).length;
+    // Profit Calculation (Dummy 10% for now or based on buy/sell price if available in older logic)
+    // Assuming simple calculation for display
+    const todayProfit = todayTotal * 0.15;
+
+    const lowStockItems = products.filter(p => p.stock <= p.reorderLevel);
+    const lowStockCount = lowStockItems.length;
+
+    const totalOrders = sales.length; // Simply total orders count
 
     return [
       {
-        title: t('totalStock'),
-        value: locale === 'bn' ? bnNumber(totalStock) : totalStock,
-        label: t('items'),
-        icon: Package,
-        gradient: "bg-gradient-blue",
-        iconColor: "text-blue-600 dark:text-blue-400",
-        href: "/products"
-      },
-      {
-        title: t('todaySales'),
+        title: "আজ বিক্রি (Today's Sale)",
         value: formatPrice(todayTotal, locale),
-        label: t('comparedToYesterday'),
+        icon: Banknote,
+        colorClass: "text-primary",
+        bgClass: "bg-blue-50 dark:bg-blue-900/30",
+        trend: "+12.5%",
+        trendColor: "text-green-600 bg-green-50",
+      },
+      {
+        title: "আজকের লাভ (Today's Profit)",
+        value: formatPrice(todayProfit, locale),
         icon: TrendingUp,
-        gradient: "bg-gradient-green",
-        iconColor: "text-emerald-600 dark:text-emerald-400",
-        href: "/reports"
+        colorClass: "text-emerald-600",
+        bgClass: "bg-emerald-50 dark:bg-emerald-900/30",
+        trend: "+5%",
+        trendColor: "text-green-600 bg-green-50",
       },
       {
-        title: t('expiringSoon'),
-        value: locale === 'bn' ? bnNumber(expiringSoonCount) : expiringSoonCount,
-        label: t('urgent'),
-        icon: Calendar,
-        gradient: "bg-gradient-red",
-        iconColor: "text-rose-600 dark:text-rose-400",
-        href: "/products"
-      },
-      {
-        title: t('lowStock'),
-        value: locale === 'bn' ? bnNumber(lowStockCount) : lowStockCount,
-        label: t('restock'),
+        title: "কম স্টক (Low Stock)",
+        value: `${locale === 'bn' ? bnNumber(lowStockCount) : lowStockCount} items`,
         icon: AlertTriangle,
-        gradient: "bg-gradient-orange",
-        iconColor: "text-orange-600 dark:text-orange-400",
-        href: "/products"
+        colorClass: "text-red-500",
+        bgClass: "bg-red-50 dark:bg-red-900/30",
+        alert: true,
+        trend: "Action Needed",
+        trendColor: "text-red-600 bg-red-50"
       },
+      {
+        title: "মোট অর্ডার (Orders)",
+        value: `${locale === 'bn' ? bnNumber(totalOrders) : totalOrders}`,
+        icon: ShoppingBag,
+        colorClass: "text-purple-600",
+        bgClass: "bg-purple-50 dark:bg-purple-900/30",
+        trend: "",
+        trendColor: ""
+      }
     ];
-  }, [products, sales, t, locale]);
+  }, [products, sales, locale]);
 
-  // Chart Data: Sales Trend (Last 7 Days)
+  // --- Chart Data (Last 7 Days) ---
   const salesTrendData = useMemo(() => {
     const last7Days = Array.from({ length: 7 }, (_, i) => {
       const d = new Date();
@@ -126,218 +116,166 @@ export default function Dashboard() {
     });
   }, [sales, locale]);
 
-  // Chart Data: Category Distribution
-  const categoryData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    products.forEach(p => {
-      const cat = categories.find(c => c.id === p.categoryId)?.name || 'Uncategorized';
-      counts[cat] = (counts[cat] || 0) + 1;
-    });
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [products, categories]);
-
-  // Warm Chart Colors (Orange, Yellow, Teal, Purple)
-  const CHART_COLORS = ['#f97316', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899'];
-
-  // Top Products Calculation
-  const topProducts = useMemo(() => {
-    const productSales: Record<number, { name: string, totalQty: number, totalRevenue: number }> = {};
-    sales.forEach(sale => {
-      sale.items.forEach(item => {
-        if (!productSales[item.productId]) {
-          productSales[item.productId] = { name: item.name, totalQty: 0, totalRevenue: 0 };
-        }
-        productSales[item.productId].totalQty += item.qty;
-        productSales[item.productId].totalRevenue += item.price * item.qty;
-      });
-    });
-
-    return Object.entries(productSales)
-      .map(([id, data]) => ({ id: Number(id), ...data }))
-      .sort((a, b) => b.totalQty - a.totalQty)
-      .slice(0, 5);
-  }, [sales]);
+  // --- Low Stock Items (Top 3) ---
+  const lowStockPreview = useMemo(() => {
+    return products
+      .filter(p => p.stock <= p.reorderLevel)
+      .slice(0, 3);
+  }, [products]);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700 max-w-[1600px] mx-auto p-4 md:p-8 pb-32">
-      {/* Welcome Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
-        <div className="relative">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground selection:bg-primary/20 selection:text-primary">
-            {t('welcomeMessage', { name: 'Admin' })} <span className="text-primary-ui">👋</span>
-          </h1>
-          <div className="h-2 w-32 bg-gradient-warm rounded-full mt-2" />
-          <p className="text-muted-foreground mt-4 text-lg font-medium max-w-md">
-            {t('description')}
-          </p>
-        </div>
-        <div className="glass-card-warm px-6 py-3 rounded-2xl flex items-center gap-4">
-          <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
-            <Clock className="h-5 w-5 animate-pulse-subtle" />
+    <div className="space-y-8 pb-24 lg:pb-10">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, idx) => (
+          <div key={idx} className={cn(
+            "bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm",
+            stat.alert && "border-l-4 border-l-red-500"
+          )}>
+            <div className="flex justify-between items-start mb-4">
+              <div className={cn("p-2 rounded-lg", stat.bgClass)}>
+                <stat.icon className={cn("h-6 w-6", stat.colorClass)} />
+              </div>
+              {stat.trend && (
+                <span className={cn("px-2 py-0.5 rounded text-xs font-bold", stat.trendColor)}>
+                  {stat.trend}
+                </span>
+              )}
+            </div>
+            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">{stat.title}</p>
+            <h3 className="text-slate-900 dark:text-white text-3xl font-bold mt-1">{stat.value}</h3>
           </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase text-muted-foreground dark:text-gray-400 tracking-widest font-black">{t('currentTime')}</span>
-            <span className="text-xl font-bold text-foreground font-mono">{new Date().toLocaleTimeString(locale === 'bn' ? 'bn-BD' : 'en-US', { hour: '2-digit', minute: '2-digit' })}</span>
-          </div>
-        </div>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Column: Quick Stats (Circular) & Time Tracker */}
-        <div className="lg:col-span-8 flex flex-col gap-8">
-          {/* Quick Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {stats.slice(0, 3).map((stat, index) => (
-              <Link key={index} href={stat.href} className="group">
-                <div className="glass-card-warm p-6 rounded-3xl relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-soft group-hover:bg-white/80">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className={cn("p-3 rounded-2xl transition-colors", stat.iconColor.replace('text-', 'bg-').replace('600', '100').replace('400', '900/20'))}>
-                      <stat.icon className={cn("h-6 w-6", stat.iconColor)} />
-                    </div>
-                    <div className="text-xs font-black bg-white/50 dark:bg-black/20 px-2 py-1 rounded-lg text-muted-foreground dark:text-gray-300 uppercase tracking-widest backdrop-blur-sm">
-                      {stat.label}
-                    </div>
-                  </div>
-                  <div className="space-y-1 relative z-10">
-                    <h3 className="text-sm font-medium text-muted-foreground">{stat.title}</h3>
-                    <p className="text-3xl font-black text-foreground tracking-tight">{stat.value}</p>
-                  </div>
-                  {/* Decorative Circle BG */}
-                  <div className={cn("absolute -bottom-6 -right-6 w-24 h-24 rounded-full opacity-10 blur-2xl transition-transform group-hover:scale-150", stat.gradient.replace('bg-gradient-', 'bg-'))} />
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          {/* Main Visual: Sales Chart */}
-          <div className="glass-card-warm p-8 rounded-[2rem] flex-1 min-h-[400px]">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+      {/* Main Layout Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column (2/3) */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Chart Section */}
+          <section className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
               <div>
-                <h2 className="text-2xl font-black text-foreground flex items-center gap-2">
-                  <TrendingUp className="h-6 w-6 text-primary-ui" />
-                  {t('recentActivity')}
-                </h2>
-                <p className="text-sm text-muted-foreground font-medium mt-1">{t('salesTrendDesc')}</p>
+                <h2 className="text-slate-900 dark:text-white text-lg font-bold">বিক্রয় চার্ট (Sales Trend)</h2>
+                <p className="text-slate-500 text-sm">গত ৭ দিনের সারাংশ</p>
               </div>
-              <div className="flex gap-2">
-                <div className="px-4 py-2 bg-green-50 text-green-700 rounded-xl font-bold text-xs flex items-center gap-2 border border-green-100">
-                  <ArrowUpRight className="h-4 w-4" /> +12.5% {t('growth')}
-                </div>
+              <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-900 p-1 rounded-lg border border-slate-100 dark:border-slate-800">
+                <button className="px-3 py-1.5 bg-white dark:bg-slate-800 rounded-md shadow-sm text-xs font-bold text-slate-700 dark:text-slate-200">সাপ্তাহিক</button>
+                <button className="px-3 py-1.5 text-xs text-slate-400 font-bold hover:text-slate-600 transition-colors">মাসিক</button>
               </div>
             </div>
 
-            <div className="h-[350px] w-full">
+            <div className="h-[250px] w-full mt-4">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={salesTrendData}>
                   <defs>
-                    <linearGradient id="warmSales" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#f97316" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
+                    <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#1a79bc" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#1a79bc" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.04)" />
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: '#a1a1aa', fontWeight: 600 }}
-                    dy={10}
-                  />
-                  <YAxis hide />
                   <Tooltip
-                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)', background: 'rgba(255, 255, 255, 0.95)' }}
-                    itemStyle={{ color: '#f97316', fontWeight: 'bold' }}
-                    cursor={{ stroke: '#f97316', strokeWidth: 2, strokeDasharray: '4 4' }}
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    cursor={{ stroke: '#1a79bc', strokeWidth: 1, strokeDasharray: '4 4' }}
                   />
                   <Area
-                    type="natural"
+                    type="monotone"
                     dataKey="amount"
-                    stroke="#f97316"
-                    strokeWidth={4}
+                    stroke="#1a79bc"
+                    strokeWidth={3}
                     fillOpacity={1}
-                    fill="url(#warmSales)"
-                    animationDuration={1500}
+                    fill="url(#salesGradient)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-          </div>
+            {/* Dummy days row at bottom if needed, but Recharts XAxis can handle it if we enabled it. Keeping clean as per reference SVG look */}
+            <div className="flex justify-between px-2 pt-4 border-t border-slate-50 dark:border-slate-700 font-mono text-xs font-bold text-slate-400 uppercase">
+              {salesTrendData.map(d => <span key={d.name}>{d.name}</span>)}
+            </div>
+          </section>
+
+          {/* Recent Transactions */}
+          <section className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+              <h2 className="text-slate-900 dark:text-white text-lg font-bold">সাম্প্রতিক লেনদেন (Recent Sales)</h2>
+              <Link href="/reports" className="text-primary text-sm font-semibold hover:underline">সব দেখুন</Link>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 text-xs font-bold uppercase">
+                  <tr>
+                    <th className="px-6 py-4">আইডি</th>
+                    <th className="px-6 py-4">কাস্টমার</th>
+                    <th className="px-6 py-4 text-center">স্ট্যাটাস</th>
+                    <th className="px-6 py-4 text-right">পরিমাণ</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                  {/* Dummy/Recent Data from Store */}
+                  {sales.slice(0, 5).map((sale, idx) => (
+                    <tr key={sale.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">#{String(sale.id).slice(0, 8)}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-slate-200">ওয়াক-ইন কাস্টমার</td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-bold">পরিশোধিত</span>
+                      </td>
+                      <td className="px-6 py-4 text-sm font-bold text-right text-slate-900 dark:text-slate-200">{formatPrice(sale.total, locale)}</td>
+                    </tr>
+                  ))}
+                  {sales.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="px-6 py-8 text-center text-slate-500 text-sm">কোন লেনদেন পাওয়া যায়নি</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
 
-        {/* Right Column: Category Pie & Top Products */}
-        <div className="lg:col-span-4 flex flex-col gap-8">
-          {/* Category Distribution */}
-          <div className="glass-card-warm p-6 rounded-[2rem]">
-            <h3 className="text-lg font-black mb-6 flex items-center gap-2">
-              <div className="p-2 bg-blue-50 rounded-lg text-blue-500"><Package className="h-4 w-4" /></div>
-              {t('inventoryDistribution')}
-            </h3>
-            <div className="h-[250px] w-full relative">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={categoryData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={5}
-                    dataKey="value"
-                    cornerRadius={6}
-                    animationBegin={200}
-                    animationDuration={1500}
-                  >
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} stroke="transparent" />
-                    ))}
-                  </Pie>
-                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-3xl font-black text-foreground">{locale === 'bn' ? bnNumber(products.length) : products.length}</span>
-                <span className="text-xs font-bold text-muted-foreground dark:text-gray-400 uppercase">{t('items')}</span>
-              </div>
+        {/* Right Column (1/3) */}
+        <div className="space-y-8">
+          {/* Stock Alerts */}
+          <section className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div className="flex items-center gap-2 mb-6">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              <h2 className="text-slate-900 dark:text-white text-lg font-bold">স্টক সতর্কতা (Stock Alert)</h2>
             </div>
-          </div>
 
-          {/* Top Products List */}
-          <div className="glass-card-warm p-6 rounded-[2rem] flex-1">
-            <h3 className="text-lg font-black mb-6 flex items-center gap-2">
-              <div className="p-2 bg-yellow-50 rounded-lg text-yellow-600"><ShoppingCart className="h-4 w-4" /></div>
-              {t('topProducts')}
-            </h3>
             <div className="space-y-4">
-              {topProducts.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground text-sm font-medium">{t('noSalesData')}</div>
-              ) : (
-                topProducts.map((product, i) => (
-                  <div key={product.id} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/50 transition-colors cursor-default">
-                    <div className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm",
-                      i === 0 ? "bg-orange-100 text-orange-600" :
-                        i === 1 ? "bg-yellow-100 text-yellow-600" :
-                          i === 2 ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-500"
-                    )}>
-                      {locale === 'bn' ? bnNumber(i + 1) : i + 1}
+              {lowStockPreview.length > 0 ? lowStockPreview.map((product) => (
+                <div key={product.id} className="flex items-center justify-between p-3 rounded-xl border border-red-50 dark:border-red-900/30 bg-red-50/30 dark:bg-red-900/10">
+                  <div className="flex gap-3 items-center">
+                    <div className="w-10 h-10 rounded-lg bg-white dark:bg-slate-700 flex items-center justify-center text-red-500 shadow-sm">
+                      <Package className="h-5 w-5" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm text-foreground truncate">{product.name}</p>
-                      <div className="h-1.5 w-full bg-gray-100 rounded-full mt-1.5 overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-orange-400 to-yellow-400 rounded-full"
-                          style={{ width: `${Math.min(100, (product.totalQty / (topProducts[0]?.totalQty || 1)) * 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="block text-xs font-black text-foreground">{formatPrice(product.totalRevenue, locale)}</span>
-                      <span className="text-[10px] font-bold text-muted-foreground">{locale === 'bn' ? bnNumber(product.totalQty) : product.totalQty} sold</span>
+                    <div>
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{product.name}</p>
+                      <p className="text-[11px] text-slate-500">মজুত: {locale === 'bn' ? bnNumber(product.stock) : product.stock} টি</p>
                     </div>
                   </div>
-                ))
+                  <Button variant="outline" size="sm" className="h-8 text-[10px] px-3 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700">
+                    রি-অর্ডার
+                  </Button>
+                </div>
+              )) : (
+                <div className="text-center py-8 text-slate-400 text-sm">সব পণ্যের স্টক ঠিক আছে ✅</div>
               )}
             </div>
+
+            <Link href="/products">
+              <button className="w-full mt-6 py-3 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl text-slate-400 text-sm font-medium hover:border-primary hover:text-primary transition-all">
+                ইনভেন্টরি রিপোর্ট দেখুন
+              </button>
+            </Link>
+          </section>
+
+          {/* Pro Upgrade Banner */}
+          <div className="bg-gradient-to-br from-primary to-blue-700 p-6 rounded-2xl text-white shadow-xl shadow-primary/20">
+            <h4 className="font-bold text-lg mb-2">প্রো ভার্সনে আপগ্রেড করুন</h4>
+            <p className="text-white/80 text-sm mb-4">আনলিমিটেড স্টক ম্যানেজমেন্ট এবং কাস্টম রিপোর্টের সুবিধা পান।</p>
+            <button className="w-full py-2.5 bg-white text-primary font-bold rounded-lg text-sm shadow-sm hover:bg-slate-50 transition-colors">বিশদ জানুন</button>
           </div>
         </div>
       </div>

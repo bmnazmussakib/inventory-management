@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html class="light" lang="bn"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Reports - Inventory &amp; POS App</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+Bengali:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1a79bc",
+                        "background-light": "#ffffff",
+                        "background-dark": "#121212",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "Noto Sans Bengali", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', 'Noto Sans Bengali', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased">
+<div class="flex min-h-screen">
+<!-- Sidebar Navigation -->
+<aside class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark hidden md:flex flex-col sticky top-0 h-screen">
+<div class="p-6">
+<div class="flex items-center gap-2 mb-8">
+<div class="bg-primary text-white p-2 rounded-lg">
+<span class="material-symbols-outlined">storefront</span>
+</div>
+<div>
+<h1 class="text-base font-bold leading-none">POS সিস্টেম</h1>
+<p class="text-xs text-slate-500 mt-1">দোকান ব্যবস্থাপনা</p>
+</div>
+</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-sm font-medium">হোম (Home)</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-sm font-medium">পণ্য (Products)</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">point_of_sale</span>
+<span class="text-sm font-medium">বিক্রয় (Sales)</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 bg-primary/10 text-primary rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">assessment</span>
+<span class="text-sm font-medium">প্রতিবেদন (Reports)</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">সেটিংস</span>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-6 border-t border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
+                        Admin
+                    </div>
+<div class="flex-1 overflow-hidden">
+<p class="text-xs font-bold truncate">আব্দুর রহমান</p>
+<p class="text-[10px] text-slate-500 truncate">মালিক</p>
+</div>
+<button class="text-slate-400 hover:text-red-500">
+<span class="material-symbols-outlined text-lg">logout</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col min-w-0">
+<!-- Top Navigation Bar -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark flex items-center justify-between px-6 sticky top-0 z-10">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-slate-600">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h2 class="text-lg font-bold tracking-tight">ব্যবসায়িক প্রতিবেদন / Reports</h2>
+</div>
+<div class="flex items-center gap-3">
+<div class="hidden sm:flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-1.5 mr-2">
+<span class="material-symbols-outlined text-slate-400 text-sm mr-2">calendar_today</span>
+<span class="text-xs font-medium">আজ: ১৬ অক্টোবর, ২০২৪</span>
+</div>
+<button class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm shadow-primary/20 hover:bg-primary/90 transition-all">
+<span class="material-symbols-outlined text-sm">download</span>
+<span>এক্সপোর্ট (Export)</span>
+</button>
+</div>
+</header>
+<div class="p-6 space-y-6 max-w-[1200px] mx-auto w-full">
+<!-- KPI Section -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl">
+<div class="flex justify-between items-start mb-2">
+<p class="text-slate-500 text-sm font-medium">আজকের বিক্রি (Sales)</p>
+<span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded">+১২%</span>
+</div>
+<p class="text-3xl font-bold tracking-tight">৳ ৪,৫০০</p>
+<p class="text-xs text-slate-400 mt-2">৩৬টি অর্ডার সম্পন্ন</p>
+</div>
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl">
+<div class="flex justify-between items-start mb-2">
+<p class="text-slate-500 text-sm font-medium">আজকের লাভ (Profit)</p>
+<span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded">+৫%</span>
+</div>
+<p class="text-3xl font-bold tracking-tight">৳ ১,২০০</p>
+<p class="text-xs text-slate-400 mt-2">গড় লাভ ২৬.৬%</p>
+</div>
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-xl">
+<div class="flex justify-between items-start mb-2">
+<p class="text-slate-500 text-sm font-medium">চলতি মাসের বিক্রি (Monthly)</p>
+<span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-1.5 py-0.5 rounded">+৮%</span>
+</div>
+<p class="text-3xl font-bold tracking-tight">৳ ১,২৫,০০০</p>
+<p class="text-xs text-slate-400 mt-2">গত মাসের তুলনায় ৫,০০০ বেশি</p>
+</div>
+</div>
+<!-- Main Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Left Column: Sales Trend -->
+<div class="lg:col-span-2 space-y-4">
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+<h3 class="font-bold text-base">বিক্রয় প্রবণতা (Sales Trend)</h3>
+<div class="flex gap-1">
+<button class="px-2 py-1 text-[10px] font-bold rounded bg-slate-100 dark:bg-slate-800">৭ দিন</button>
+<button class="px-2 py-1 text-[10px] font-bold rounded text-slate-400 hover:bg-slate-50">৩০ দিন</button>
+</div>
+</div>
+<div class="p-6">
+<div class="mb-6">
+<p class="text-xs text-slate-400 mb-1">গত ৭ দিনের মোট বিক্রয়</p>
+<h4 class="text-2xl font-bold">৳ ৪২,০০০</h4>
+</div>
+<div class="flex items-end justify-between h-48 gap-3 md:gap-6 px-2">
+<!-- Bar Chart -->
+<div class="flex-1 flex flex-col items-center gap-3">
+<div class="w-full bg-slate-100 dark:bg-slate-800 rounded-t relative overflow-hidden h-[80%] group">
+<div class="absolute bottom-0 left-0 right-0 bg-primary/20 group-hover:bg-primary/30 h-full transition-all"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-400">শনি</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-3">
+<div class="w-full bg-slate-100 dark:bg-slate-800 rounded-t relative overflow-hidden h-[40%] group">
+<div class="absolute bottom-0 left-0 right-0 bg-primary/20 group-hover:bg-primary/30 h-full transition-all"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-400">রবি</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-3">
+<div class="w-full bg-slate-100 dark:bg-slate-800 rounded-t relative overflow-hidden h-[60%] group">
+<div class="absolute bottom-0 left-0 right-0 bg-primary/20 group-hover:bg-primary/30 h-full transition-all"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-400">সোম</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-3">
+<div class="w-full bg-slate-100 dark:bg-slate-800 rounded-t relative overflow-hidden h-[95%] group">
+<div class="absolute bottom-0 left-0 right-0 bg-primary h-full transition-all"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-900 dark:text-slate-100">মঙ্গল</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-3">
+<div class="w-full bg-slate-100 dark:bg-slate-800 rounded-t relative overflow-hidden h-[70%] group">
+<div class="absolute bottom-0 left-0 right-0 bg-primary/20 group-hover:bg-primary/30 h-full transition-all"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-400">বুধ</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-3">
+<div class="w-full bg-slate-100 dark:bg-slate-800 rounded-t relative overflow-hidden h-[85%] group">
+<div class="absolute bottom-0 left-0 right-0 bg-primary/20 group-hover:bg-primary/30 h-full transition-all"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-400">বৃহ</span>
+</div>
+<div class="flex-1 flex flex-col items-center gap-3">
+<div class="w-full bg-slate-100 dark:bg-slate-800 rounded-t relative overflow-hidden h-[50%] group">
+<div class="absolute bottom-0 left-0 right-0 bg-primary/20 group-hover:bg-primary/30 h-full transition-all"></div>
+</div>
+<span class="text-[10px] font-bold text-slate-400">শুক্র</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Top Products -->
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+<h3 class="font-bold text-base">জনপ্রিয় পণ্য (Top Selling)</h3>
+</div>
+<div class="divide-y divide-slate-100 dark:divide-slate-800">
+<div class="px-6 py-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-slate-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400">inventory</span>
+</div>
+<div>
+<p class="text-sm font-bold">চিনি (১ কেজি)</p>
+<p class="text-[10px] text-slate-400">১৪২ বার বিক্রি হয়েছে</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold">৳ ১৮,৪৬০</p>
+<p class="text-[10px] text-emerald-500">স্টক আছে</p>
+</div>
+</div>
+<div class="px-6 py-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-slate-100 flex items-center justify-center">
+<span class="material-symbols-outlined text-slate-400">inventory</span>
+</div>
+<div>
+<p class="text-sm font-bold">সয়াবিন তেল (৫ লিটার)</p>
+<p class="text-[10px] text-slate-400">৮৯ বার বিক্রি হয়েছে</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold">৳ ১৫,১২০</p>
+<p class="text-[10px] text-amber-500">স্টক কম</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Recent Activity -->
+<div class="space-y-4">
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+<h3 class="font-bold text-base">সাম্প্রতিক সারসংক্ষেপ (Summary)</h3>
+</div>
+<div class="p-0">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-800/50">
+<th class="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider">তারিখ</th>
+<th class="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right">বিক্রি</th>
+<th class="px-4 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right">লাভ</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-4 py-3 text-xs font-medium">১৫ অক্টোবর</td>
+<td class="px-4 py-3 text-xs font-bold text-right">৳ ৫,২০০</td>
+<td class="px-4 py-3 text-xs font-bold text-emerald-600 dark:text-emerald-400 text-right">৳ ১,৪৫০</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-4 py-3 text-xs font-medium">১৪ অক্টোবর</td>
+<td class="px-4 py-3 text-xs font-bold text-right">৳ ৪,৮৯০</td>
+<td class="px-4 py-3 text-xs font-bold text-emerald-600 dark:text-emerald-400 text-right">৳ ১,২০০</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-4 py-3 text-xs font-medium">১৩ অক্টোবর</td>
+<td class="px-4 py-3 text-xs font-bold text-right">৳ ৪,১৫০</td>
+<td class="px-4 py-3 text-xs font-bold text-emerald-600 dark:text-emerald-400 text-right">৳ ৯৮০</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-4 py-3 text-xs font-medium">১২ অক্টোবর</td>
+<td class="px-4 py-3 text-xs font-bold text-right">৳ ৬,১০০</td>
+<td class="px-4 py-3 text-xs font-bold text-emerald-600 dark:text-emerald-400 text-right">৳ ১,৭৩০</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-4 py-3 text-xs font-medium">১১ অক্টোবর</td>
+<td class="px-4 py-3 text-xs font-bold text-right">৳ ৩,৯০০</td>
+<td class="px-4 py-3 text-xs font-bold text-emerald-600 dark:text-emerald-400 text-right">৳ ৯০০</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-slate-100 dark:border-slate-800">
+<button class="w-full text-[10px] font-bold text-primary hover:underline text-center">সম্পূর্ণ তালিকা দেখুন</button>
+</div>
+</div>
+<!-- Quick Insights -->
+<div class="bg-primary/5 border border-primary/20 rounded-xl p-5">
+<div class="flex items-center gap-2 mb-3 text-primary">
+<span class="material-symbols-outlined text-xl">lightbulb</span>
+<h4 class="font-bold text-sm">পরামর্শ</h4>
+</div>
+<p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                                গত সপ্তাহের তুলনায় আপনার <strong>বিকেল ৪টা থেকে রাত ৮টার</strong> মধ্যে সবচেয়ে বেশি বিক্রি হচ্ছে। এই সময়ে অতিরিক্ত কর্মচারী রাখার কথা ভাবতে পারেন।
+                            </p>
+</div>
+</div>
+</div>
+<!-- Last Update Info -->
+<div class="flex justify-center pt-4">
+<p class="text-[10px] text-slate-400 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">sync</span>
+                        সর্বশেষ আপডেট: ১৬ অক্টোবর ২০২৪, দুপুর ২:৩০ মিনিট
+                    </p>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+
+<html class="light" lang="bn"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>নতুন পণ্য যোগ করুন | ShopManager BD</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Noto+Sans+Bengali:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1a79bc",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#111827",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "Noto Sans Bengali", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', 'Noto Sans Bengali', sans-serif;
+        }
+        .bengali-font {
+            font-family: 'Noto Sans Bengali', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen text-slate-900 dark:text-slate-100">
+<div class="flex flex-col min-h-screen">
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 md:px-10 lg:px-40 py-3 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-primary p-2 rounded-lg text-white">
+<span class="material-symbols-outlined block">inventory_2</span>
+</div>
+<div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight">ShopManager BD</h2>
+<p class="text-[10px] text-slate-500 font-medium tracking-wider uppercase">Inventory &amp; POS</p>
+</div>
+</div>
+<div class="flex items-center gap-2 md:gap-6">
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-slate-600 dark:text-slate-400 text-sm font-semibold hover:text-primary transition-colors" href="#">ড্যাশবোর্ড</a>
+<a class="text-primary text-sm font-bold border-b-2 border-primary pb-1" href="#">ইনভেন্টরি</a>
+<a class="text-slate-600 dark:text-slate-400 text-sm font-semibold hover:text-primary transition-colors" href="#">বিক্রয়</a>
+</nav>
+<div class="flex items-center gap-2 border-l border-slate-200 dark:border-slate-700 pl-4">
+<button class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden ring-2 ring-primary/20">
+<img alt="Shop Profile" data-alt="Small circular shop profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-B3dSms7MxD7LojKoinWVLgHPePBnr7r7YJZzIHBq27G3moE1HPBJf1gZmmcCQLebMZbmMTmJxq9x-UljWRemlysWmOog1s9sUM7ww9Lz0658wAwQxkwsyblApj5N_5lh4kvhxZOQ-44VksnhPWE4bHqjJOYJRGn9i8WBZBV-WhrRbuKdTfa0vemTFczj6syJl0rqM-WUdrFVK-Zm2UHMm0mWwKDO4Nmh1dhC3efkglCQFLI4MndEH-VuAxOaYriW3cy91i0xr3pt"/>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-1 flex justify-center py-6 md:py-10 px-4">
+<div class="w-full max-w-[800px] flex flex-col">
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-2 mb-6 text-sm">
+<a class="text-slate-500 dark:text-slate-400 hover:text-primary flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-base">home</span>
+                        হোম
+                    </a>
+<span class="text-slate-300 dark:text-slate-600">/</span>
+<a class="text-slate-500 dark:text-slate-400 hover:text-primary" href="#">ইনভেন্টরি</a>
+<span class="text-slate-300 dark:text-slate-600">/</span>
+<span class="text-primary font-semibold">নতুন পণ্য</span>
+</nav>
+<!-- Page Title -->
+<div class="mb-8">
+<h1 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-2">নতুন পণ্য যোগ করুন <span class="text-slate-400 text-lg font-normal ml-2 block md:inline">(Add New Product)</span></h1>
+<p class="text-slate-500 dark:text-slate-400">সঠিক তথ্য দিয়ে স্টক ইনভেন্টরি আপডেট করুন।</p>
+</div>
+<!-- Form Card -->
+<form class="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+<div class="p-6 md:p-8 space-y-6">
+<!-- Product Name -->
+<div class="space-y-2">
+<label class="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-semibold text-base">
+                                পণ্যর নাম (Product Name) <span class="text-red-500">*</span>
+</label>
+<input class="w-full h-14 px-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-all text-lg" placeholder="যেমন: মিনিকেট চাল ৫ কেজি" type="text"/>
+</div>
+<!-- Category Selection -->
+<div class="space-y-2">
+<label class="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-semibold text-base">
+                                ক্যাটাগরি (Category)
+                            </label>
+<div class="relative">
+<select class="w-full h-14 px-4 appearance-none rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-all text-lg cursor-pointer">
+<option value="">নির্বাচন করুন (Select)</option>
+<option value="grocery">মুদিখানা (Grocery)</option>
+<option value="electronics">ইলেকট্রনিক্স (Electronics)</option>
+<option value="beverage">পানীয় (Beverage)</option>
+<option value="cosmetics">কসমেটিকস (Cosmetics)</option>
+</select>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">expand_more</span>
+</div>
+</div>
+<!-- Price Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="text-slate-700 dark:text-slate-300 font-semibold text-base flex items-center gap-1">
+                                    ক্রয়মূল্য (Buy Price)
+                                </label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">৳</span>
+<input class="w-full h-14 pl-10 pr-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-all text-lg" placeholder="0.00" type="number"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-slate-700 dark:text-slate-300 font-semibold text-base flex items-center gap-1">
+                                    বিক্রয়মূল্য (Sell Price)
+                                </label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">৳</span>
+<input class="w-full h-14 pl-10 pr-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-all text-lg" placeholder="0.00" type="number"/>
+</div>
+</div>
+</div>
+<!-- Inventory Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="text-slate-700 dark:text-slate-300 font-semibold text-base flex items-center gap-1">
+                                    বর্তমান স্টক (Initial Stock)
+                                </label>
+<div class="relative">
+<input class="w-full h-14 px-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-all text-lg" placeholder="০" type="number"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">টি/পিস</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-slate-700 dark:text-slate-300 font-semibold text-base flex items-center gap-1">
+                                    রিবর্ডার লেভেল (Reorder Level)
+                                </label>
+<div class="relative">
+<input class="w-full h-14 px-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-all text-lg" placeholder="৫" type="number"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">টি/পিস</span>
+</div>
+<p class="text-[12px] text-slate-500">স্টক এর নিচে নামলে সতর্কবার্তা দিবে।</p>
+</div>
+</div>
+<!-- Barcode Section (Extra Value Add) -->
+<div class="space-y-2 pt-2">
+<label class="text-slate-700 dark:text-slate-300 font-semibold text-base flex items-center gap-1">
+                                বারকোড (Barcode/SKU)
+                            </label>
+<div class="flex gap-2">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">qr_code_scanner</span>
+<input class="w-full h-14 pl-12 pr-4 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-all text-lg" placeholder="বারকোড স্ক্যান করুন বা লিখুন" type="text"/>
+</div>
+<button class="h-14 px-4 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-200 transition-colors" type="button">
+<span class="material-symbols-outlined">center_focus_weak</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="px-6 py-8 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex flex-col-reverse md:flex-row items-center justify-end gap-4">
+<button class="w-full md:w-auto px-10 h-14 rounded-lg font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all" type="button">
+                            বাতিল করুন (Cancel)
+                        </button>
+<button class="w-full md:w-auto px-12 h-14 bg-primary text-white rounded-lg font-bold text-lg shadow-lg shadow-primary/30 hover:bg-primary/90 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2" type="submit">
+<span class="material-symbols-outlined">save</span>
+                            পণ্য সংরক্ষণ করুন (Save Product)
+                        </button>
+</div>
+</form>
+<!-- Helper Tips -->
+<div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="p-4 rounded-xl bg-primary/5 border border-primary/10 flex items-start gap-3">
+<span class="material-symbols-outlined text-primary">tips_and_updates</span>
+<div class="text-sm">
+<h4 class="font-bold text-primary mb-1">টিপস</h4>
+<p class="text-slate-600 dark:text-slate-400 leading-snug">সঠিক স্টক মেইনটেইন করতে রিবর্ডার লেভেল সেট করুন।</p>
+</div>
+</div>
+<div class="p-4 rounded-xl bg-green-500/5 border border-green-500/10 flex items-start gap-3">
+<span class="material-symbols-outlined text-green-600">payments</span>
+<div class="text-sm">
+<h4 class="font-bold text-green-600 mb-1">লাভ গণনা</h4>
+<p class="text-slate-600 dark:text-slate-400 leading-snug">বিক্রয়মূল্য এবং ক্রয়মূল্য দিলে সিস্টেম স্বয়ংক্রিয়ভাবে লাভ দেখাবে।</p>
+</div>
+</div>
+<div class="p-4 rounded-xl bg-orange-500/5 border border-orange-500/10 flex items-start gap-3">
+<span class="material-symbols-outlined text-orange-600">speed</span>
+<div class="text-sm">
+<h4 class="font-bold text-orange-600 mb-1">দ্রুত এন্ট্রি</h4>
+<p class="text-slate-600 dark:text-slate-400 leading-snug">ট্যাব বাটন ব্যবহার করে এক ইনপুট থেকে অন্যটিতে দ্রুত যান।</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Footer (Simple) -->
+<footer class="py-6 border-t border-slate-200 dark:border-slate-800 text-center px-4">
+<p class="text-slate-500 text-sm">© ২০২৪ ShopManager BD. সর্বস্বত্ব সংরক্ষিত।</p>
+</footer>
+</div>
+</body></html>

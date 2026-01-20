@@ -1,153 +1,135 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
     LayoutDashboard,
+    Calculator,
     Package,
-    ShoppingCart,
     BarChart3,
-    Menu,
-    Box,
-    FileUp,
-    Folders
+    Users,
+    Settings,
+    Store,
+    PlusCircle,
+    Menu
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/ThemeToggle';
-import {
-    Sheet,
-    SheetContent,
-    SheetTrigger,
-    SheetHeader,
-    SheetTitle
-} from '@/components/ui/sheet';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useTranslations } from 'next-intl';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
-interface NavItem {
-    titleKey: string;
-    href: string;
-    icon: React.ElementType;
-}
+// Navigation Items matching Reference
+const navItems = [
+    {
+        title: 'ড্যাশবোর্ড',
+        subtitle: '(Dashboard)',
+        href: '/',
+        icon: LayoutDashboard,
+    },
+    {
+        title: 'পিওএস',
+        subtitle: '(POS)',
+        href: '/sales',
+        icon: Calculator, // Representing Point of Sale
+    },
+    {
+        title: 'ইনভেন্টরি',
+        subtitle: '(Inventory)',
+        href: '/products',
+        icon: Package,
+    },
+    {
+        title: 'রিপোর্ট',
+        subtitle: '(Reports)',
+        href: '/reports',
+        icon: BarChart3,
+    },
+    {
+        title: 'কাস্টমার',
+        subtitle: '(Customers)',
+        href: '/customers',
+        icon: Users,
+    },
+    {
+        title: 'সেটিংস',
+        subtitle: '(Settings)',
+        href: '/settings',
+        icon: Settings,
+    },
+];
 
 export function Sidebar() {
     const pathname = usePathname();
-    const t = useTranslations('Common');
 
-    const navItems: NavItem[] = useMemo(() => [
-        {
-            titleKey: 'dashboard',
-            href: '/',
-            icon: LayoutDashboard,
-        },
-        {
-            titleKey: 'products',
-            href: '/products',
-            icon: Package,
-        },
-        {
-            titleKey: 'categories',
-            href: '/categories',
-            icon: Folders,
-        },
-        {
-            titleKey: 'sales',
-            href: '/sales',
-            icon: ShoppingCart,
-        },
-        {
-            titleKey: 'bulkUpload',
-            href: '/bulk-upload',
-            icon: FileUp,
-        },
-        {
-            titleKey: 'reports',
-            href: '/reports',
-            icon: BarChart3,
-        },
-    ], []);
-
-    const SidebarContent = ({ pathname }: { pathname: string }) => (
-        <div className="flex flex-col h-full py-6">
-            <div className="px-6 mb-8">
-                <Link href="/" className="flex items-center gap-4 group">
-                    <div className="p-2.5 bg-gradient-to-br from-orange-400 to-amber-500 rounded-2xl shadow-lg shadow-orange-500/20 group-hover:rotate-6 transition-transform duration-500">
-                        <Box className="h-6 w-6 text-white" />
+    const SidebarContent = () => (
+        <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
+            {/* Logo / Header */}
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-3">
+                    <div className="bg-primary/10 p-2 rounded-lg text-primary">
+                        <Store className="h-6 w-6" />
                     </div>
                     <div>
-                        <span className="text-xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-orange-600 via-amber-500 to-orange-600">
-                            Inventory <span className="font-bengali">BD</span>
-                        </span>
-                        <div className="h-1 w-0 group-hover:w-full bg-gradient-to-r from-orange-400 to-amber-400 transition-all duration-500 rounded-full mt-1" />
+                        <h1 className="text-slate-900 dark:text-white text-lg font-bold leading-tight">শপ ম্যানেজার</h1>
+                        <p className="text-slate-500 dark:text-slate-400 text-xs">Bangladesh Shop Ltd.</p>
                     </div>
-                </Link>
+                </div>
             </div>
 
-            <ScrollArea className="flex-1 px-4">
-                <nav className="space-y-2 pt-2">
-                    {navItems.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = pathname === item.href;
-                        return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                className={cn(
-                                    "flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 group relative overflow-hidden",
-                                    isActive
-                                        ? "bg-gradient-primary text-primary-foreground shadow-vibrant scale-[1.02] active:scale-95"
-                                        : "text-muted-foreground hover:bg-primary/5 hover:text-primary hover:translate-x-1"
-                                )}
-                            >
-                                <Icon className={cn(
-                                    "h-5 w-5 transition-transform duration-300 group-hover:scale-110",
-                                    isActive ? "text-white" : "text-muted-foreground group-hover:text-primary"
-                                )} />
-                                <span className="font-bold tracking-wide">{t(item.titleKey)}</span>
-                                {isActive && (
-                                    <div className="absolute right-0 h-10 w-1.5 bg-white/20 rounded-l-full backdrop-blur-md" />
-                                )}
-                                <div className="absolute top-0 left-0 w-1 h-full bg-white/10 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
-                            </Link>
-                        );
-                    })}
-                </nav>
-            </ScrollArea>
+            {/* Navigation */}
+            <nav className="flex-1 p-4 flex flex-col gap-1 overflow-y-auto">
+                {navItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
 
-            <div className="px-4 mt-auto pt-6 border-t border-muted/50">
-                <div className="p-4 bg-primary/5 rounded-2xl flex items-center justify-between border border-primary/10 shadow-inner">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-primary/60">{t('appVersion')} v1.1.0</span>
-                    <ThemeToggle />
-                </div>
+                    return (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            className={cn(
+                                "flex items-center gap-3 px-4 py-3 rounded-xl transition-colors",
+                                isActive
+                                    ? "bg-primary/10 text-primary font-semibold"
+                                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+                            )}
+                        >
+                            <Icon className={cn("h-5 w-5", isActive ? "text-primary" : "text-slate-500")} />
+                            <div className="flex flex-col leading-none">
+                                <span className={cn("text-sm", isActive ? "font-bold" : "font-medium")}>
+                                    {item.title} <span className="opacity-70 text-xs font-normal">{item.subtitle}</span>
+                                </span>
+                            </div>
+                        </Link>
+                    );
+                })}
+            </nav>
+
+            {/* Bottom Action */}
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800">
+                <Link href="/sales">
+                    <Button className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-6 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+                        <PlusCircle className="h-5 w-5" />
+                        <span>নতুন বিক্রি (New Sale)</span>
+                    </Button>
+                </Link>
             </div>
         </div>
     );
 
     return (
         <>
-            {/* Desktop Sidebar (Floating & Rounded) */}
-            <aside className="hidden md:flex flex-col w-64 h-[calc(100vh-2rem)] fixed left-4 top-4 rounded-[2rem] border border-white/20 bg-white/60 dark:bg-card/50 backdrop-blur-xl shadow-soft z-30 transition-all duration-300">
-                <SidebarContent pathname={pathname} />
+            {/* Desktop Sidebar */}
+            <aside className="hidden lg:flex w-72 flex-col fixed top-0 left-0 h-screen z-30">
+                <SidebarContent />
             </aside>
 
-            {/* Mobile Sidebar (Sheet/Drawer) */}
-            <div className="md:hidden fixed bottom-6 right-6 z-40">
-                <Sheet>
-                    <SheetTrigger asChild>
-                        <Button size="icon" className="h-14 w-14 rounded-full shadow-2xl shadow-primary/40 hover:scale-105 transition-transform">
-                            <Menu className="h-6 w-6" />
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent side="left" className="p-0 w-[280px] border-r-0">
-                        <SheetHeader className="sr-only">
-                            <SheetTitle>{t('navMenu')}</SheetTitle>
-                        </SheetHeader>
-                        <SidebarContent pathname={pathname} />
-                    </SheetContent>
-                </Sheet>
-            </div>
+            {/* Mobile Trigger - This usually goes in Navbar, but kept here for local testing if needed, 
+                though layout.tsx structure separates Navbar and Sidebar. 
+                We'll assume Navbar handles the trigger or we just conditionally render sidebar. 
+                For this implementation, the layout.tsx expects Sidebar to take up space.
+                The previous implementation had a "md:hidden" floating button. 
+                I'll leave the trigger logic to the Navbar to match the reference 'menu' button there.
+            */}
         </>
     );
 }
