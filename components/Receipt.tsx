@@ -62,9 +62,9 @@ export const Receipt = React.forwardRef<HTMLDivElement, ReceiptProps>(({ sale, c
             <table className="w-full mb-4 text-[10px] font-bengali">
                 <thead>
                     <tr className="border-b border-gray-200">
-                        <th className="text-left font-bold pb-2">{t('cart.product')}</th>
-                        <th className="text-center font-bold pb-2">{t('cart.qty')}</th>
-                        <th className="text-right font-bold pb-2">{t('cart.price')}</th>
+                        <th className="text-left font-bold pb-2">{t('item')}</th>
+                        <th className="text-center font-bold pb-2">{t('qty')}</th>
+                        <th className="text-right font-bold pb-2">{t('price')}</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -74,7 +74,7 @@ export const Receipt = React.forwardRef<HTMLDivElement, ReceiptProps>(({ sale, c
                                 <div className="font-bold">{item.name}</div>
                                 {item.scheme && (
                                     <div className="text-[8px] text-gray-500 italic mt-0.5 opacity-80">
-                                        {t('cart.offer', { scheme: item.scheme })}
+                                        {t('offer', { scheme: item.scheme })}
                                     </div>
                                 )}
                             </td>
@@ -90,18 +90,18 @@ export const Receipt = React.forwardRef<HTMLDivElement, ReceiptProps>(({ sale, c
             {/* Footer / Total */}
             <div className="space-y-1 pt-2 font-bengali">
                 <div className="flex justify-between text-[10px]">
-                    <span>{t('summary.subtotal')}:</span>
+                    <span>{t('subtotal')}:</span>
                     <span>{formatPrice(sale.subtotal, locale)}</span>
                 </div>
                 {sale.discount > 0 && (
                     <div className="flex justify-between text-[10px] text-gray-600">
-                        <span>{t('summary.totalDiscount')}:</span>
+                        <span>{t('discount')}:</span>
                         <span>-{formatPrice(sale.discount, locale)}</span>
                     </div>
                 )}
                 <div className="border-b border-gray-200 my-2" />
                 <div className="flex justify-between text-base font-bold">
-                    <span>{t('summary.total')}:</span>
+                    <span>{t('grandTotal')}:</span>
                     <span>{formatPrice(sale.total, locale)}</span>
                 </div>
                 <div className="flex justify-between text-[10px] text-gray-500 italic mt-2">
@@ -113,10 +113,14 @@ export const Receipt = React.forwardRef<HTMLDivElement, ReceiptProps>(({ sale, c
             <div className="border-b border-dashed border-gray-400 my-6" />
 
             {/* Thank You Note */}
-            <div className="text-center space-y-1 font-bengali">
-                <p className="text-[11px] font-bold">{locale === 'bn' ? 'ধন্যবাদ! আবার আসবেন।' : 'Thank you! Come again.'}</p>
-                <p className="text-[9px] text-gray-500 italic">Thank you for shopping with us!</p>
-                <p className="text-[8px] mt-4 opacity-30">Powered by Inventory BD</p>
+            <div className="text-center space-y-2 font-bengali pt-4">
+                <p className="text-[10px] font-bold leading-tight break-words">
+                    {locale === 'bn' ? 'ধন্যবাদ! আবার আসবেন।' : 'Thank you! Come again.'}
+                </p>
+                <p className="text-[9px] text-gray-500 leading-tight">Thank you for shopping with us!</p>
+                <div className="pt-2">
+                    <p className="text-[8px] opacity-40">Powered by Inventory BD</p>
+                </div>
             </div>
         </div>
     );

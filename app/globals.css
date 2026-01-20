@@ -151,3 +151,68 @@
     @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm;
   }
 }
+
+@media print {
+
+  /* Hide everything visually but keep layout to avoid display:none issues on parents */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Reset layout constraints */
+  html,
+  body {
+    height: auto !important;
+    overflow: hidden !important;
+    /* Clip ghost content to avoid extra pages */
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  /* Make the receipt visible */
+  .printable-receipt,
+  .printable-receipt * {
+    visibility: visible !important;
+  }
+
+  /* Position the receipt */
+  .printable-receipt {
+    position: absolute !important;
+    left: 50% !important;
+    top: 20px !important;
+    /* Small top margin */
+    /* Center it */
+    margin-left: -40mm !important;
+    width: 80mm !important;
+    height: auto !important;
+
+    /* Styling */
+    padding: 0 !important;
+    background: white !important;
+    box-shadow: none !important;
+    border: none !important;
+
+    z-index: 99999 !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Ensure overlays don't block view (visually) */
+  [role="dialog"],
+  [data-state="open"] {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    /* DO NOT use display: none here or it hides the receipt */
+  }
+
+  [data-overlay-container] {
+    background: none !important;
+  }
+
+  @page {
+    size: auto;
+    margin: 0;
+  }
+}

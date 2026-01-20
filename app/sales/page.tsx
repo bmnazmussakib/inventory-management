@@ -40,6 +40,7 @@ import {
     DialogFooter
 } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from 'next/link';
 
 interface CartItem {
     productId: number;
@@ -81,7 +82,7 @@ export default function SalesPage() {
     const filteredProducts = useMemo(() => {
         return products.filter(p => {
             const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.barcode?.includes(searchTerm) ||
+                p.ean?.includes(searchTerm) ||
                 p.category?.toLowerCase().includes(searchTerm.toLowerCase());
 
             const matchesCategory = selectedCategory ? p.categoryId === Number(selectedCategory) : true;
@@ -92,7 +93,7 @@ export default function SalesPage() {
 
     const handleScan = (code: string) => {
         setIsScanning(false);
-        const product = products.find(p => p.barcode === code || p.id?.toString() === code);
+        const product = products.find(p => p.ean === code || p.id?.toString() === code);
         if (product) {
             addToCart(product);
             toast.success('Product added to cart');
@@ -123,12 +124,12 @@ export default function SalesPage() {
             ));
         } else {
             const discountPercent = product.discountPercent || 0;
-            const discountedPrice = product.price * (1 - discountPercent / 100);
+            const discountedPrice = product.sellPrice * (1 - discountPercent / 100);
             setCart([...cart, {
                 productId: product.id!,
                 name: product.name,
                 qty: 1,
-                price: product.price,
+                price: product.sellPrice,
                 stock: product.stock,
                 discountPercent: discountPercent,
                 discountedPrice: discountedPrice,
@@ -233,6 +234,11 @@ export default function SalesPage() {
                         >
                             <Scan className="mr-2 h-4 w-4" /> {t('scanBarcode')}
                         </Button>
+                        <Link href="/sales/history">
+                            <Button variant="outline" className="h-11 px-6 font-bold border-slate-300 dark:border-slate-600">
+                                <FileText className="mr-2 h-4 w-4" /> History
+                            </Button>
+                        </Link>
                     </div>
                     {/* Categories */}
                     <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
@@ -295,7 +301,7 @@ export default function SalesPage() {
                                     <div className="mt-auto flex items-end justify-between w-full">
                                         <div>
                                             <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Stock: {product.stock}</p>
-                                            <p className="text-primary font-bold">{formatPrice(product.price, locale)}</p>
+                                            <p className="text-primary font-bold">{formatPrice(product.sellPrice, locale)}</p>
                                         </div>
                                         <div className="bg-primary/10 text-primary p-2 rounded-lg group-hover:bg-primary group-hover:text-white transition-colors">
                                             <Plus className="h-4 w-4" />

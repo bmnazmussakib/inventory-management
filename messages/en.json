@@ -198,7 +198,11 @@
         "cash": "Cash",
         "card": "Card",
         "mobileMoney": "Mobile Banking",
-        "change": "Change Return"
+        "change": "Change Return",
+        "offer": "Offer: {scheme}",
+        "receipt": {
+            "title": "CASH MEMO"
+        }
     },
     "Reports": {
         "title": "Reports & Analytics",

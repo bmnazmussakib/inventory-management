@@ -288,7 +288,7 @@ export default function ReportsPage() {
                             </TableBody>
                         </Table>
                         <div className="p-4 border-t border-slate-100 dark:border-slate-800">
-                            <Link href="/sales" className="block w-full text-[10px] font-bold text-primary hover:underline text-center uppercase tracking-wider">
+                            <Link href="/sales/history" className="block w-full text-[10px] font-bold text-primary hover:underline text-center uppercase tracking-wider">
                                 View Full History
                             </Link>
                         </div>

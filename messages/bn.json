@@ -198,7 +198,11 @@
         "cash": "নগদ (Cash)",
         "card": "কার্ড (Card)",
         "mobileMoney": "মোবাইল ব্যাংকিং",
-        "change": "ফেরত (Change)"
+        "change": "ফেরত (Change)",
+        "offer": "অফার: {scheme}",
+        "receipt": {
+            "title": "ক্যাশ মেমো"
+        }
     },
     "Reports": {
         "title": "রিপোর্ট ও এনালাইটিক্স",
