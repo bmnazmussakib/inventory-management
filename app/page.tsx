@@ -14,10 +14,12 @@ import {
   Search,
   ArrowUpRight,
   Package,
-  Soup, // For 'Soap'
-  GlassWater, // For 'Drink'
-  Utensils // For 'Food'
+  Soup,
+  GlassWater,
+  Utensils,
+  Wallet // Added Wallet icon
 } from 'lucide-react';
+import { useExpenseStore } from '@/stores/expense-store';
 import { bnNumber, formatPrice } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import {
@@ -38,11 +40,13 @@ export default function Dashboard() {
 
   const { products, fetchProducts } = useProductStore();
   const { sales, fetchSales } = useSalesStore();
+  const { expenses, fetchExpenses } = useExpenseStore();
 
   useEffect(() => {
     fetchProducts();
     fetchSales();
-  }, [fetchProducts, fetchSales]);
+    fetchExpenses();
+  }, [fetchProducts, fetchSales, fetchExpenses]);
 
   // --- Dynamic Stats Calculations ---
   const stats = useMemo(() => {
@@ -50,14 +54,34 @@ export default function Dashboard() {
     const todaySalesData = sales.filter(s => new Date(s.date).setHours(0, 0, 0, 0) === today);
     const todayTotal = todaySalesData.reduce((sum, s) => sum + s.total, 0);
 
-    // Profit Calculation (Dummy 10% for now or based on buy/sell price if available in older logic)
-    // Assuming simple calculation for display
-    const todayProfit = todayTotal * 0.15;
+    // Monthly Stats
+    const now = new Date();
+    const currentMonthSales = sales.filter(s => {
+      const d = new Date(s.date);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
+    const currentMonthExpenses = expenses.filter(e => {
+      const d = new Date(e.date);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
+
+    const monthRevenue = currentMonthSales.reduce((sum, s) => sum + s.total, 0);
+    const monthExpense = currentMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+    let monthCOGS = 0;
+    currentMonthSales.forEach(sale => {
+      sale.items.forEach(item => {
+        const product = products.find(p => p.id === item.productId);
+        monthCOGS += (product?.buyPrice || 0) * item.qty;
+      });
+    });
+
+    const monthNetProfit = monthRevenue - monthCOGS - monthExpense;
 
     const lowStockItems = products.filter(p => p.stock <= p.reorderLevel);
     const lowStockCount = lowStockItems.length;
 
-    const totalOrders = sales.length; // Simply total orders count
+    // const totalOrders = sales.length; 
 
     return [
       {
@@ -70,12 +94,21 @@ export default function Dashboard() {
         trendColor: "text-green-600 bg-green-50",
       },
       {
-        title: "আজকের লাভ (Today's Profit)",
-        value: formatPrice(todayProfit, locale),
+        title: "মাসিক খরচ (Mo. Expenses)",
+        value: formatPrice(monthExpense, locale),
+        icon: Wallet,
+        colorClass: "text-orange-600",
+        bgClass: "bg-orange-50 dark:bg-orange-900/30",
+        trend: "Outgoing",
+        trendColor: "text-orange-600 bg-orange-50",
+      },
+      {
+        title: "মাসিক লাভ (Mo. Net Profit)",
+        value: formatPrice(monthNetProfit, locale),
         icon: TrendingUp,
         colorClass: "text-emerald-600",
         bgClass: "bg-emerald-50 dark:bg-emerald-900/30",
-        trend: "+5%",
+        trend: "+12%",
         trendColor: "text-green-600 bg-green-50",
       },
       {
@@ -87,18 +120,9 @@ export default function Dashboard() {
         alert: true,
         trend: "Action Needed",
         trendColor: "text-red-600 bg-red-50"
-      },
-      {
-        title: "মোট অর্ডার (Orders)",
-        value: `${locale === 'bn' ? bnNumber(totalOrders) : totalOrders}`,
-        icon: ShoppingBag,
-        colorClass: "text-purple-600",
-        bgClass: "bg-purple-50 dark:bg-purple-900/30",
-        trend: "",
-        trendColor: ""
       }
     ];
-  }, [products, sales, locale]);
+  }, [products, sales, expenses, locale]);
 
   // --- Chart Data (Last 7 Days) ---
   const salesTrendData = useMemo(() => {

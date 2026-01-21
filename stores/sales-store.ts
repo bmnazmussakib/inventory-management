@@ -27,7 +27,7 @@ export const useSalesStore = create<SalesState>((set, get) => ({
 
     addSale: async (saleData) => {
         try {
-            await db.transaction('rw', db.sales, db.products, async () => {
+            await db.transaction('rw', db.sales, db.products, db.customers, async () => {
                 // 1. Add the sale record
                 await db.sales.add(saleData as Sale);
 
@@ -40,11 +40,33 @@ export const useSalesStore = create<SalesState>((set, get) => ({
                         });
                     }
                 }
+
+                // 3. Update customer balance if linked
+                if (saleData.customerId) {
+                    const customer = await db.customers.get(saleData.customerId);
+                    if (customer && customer.id) {
+                        // If credit sale or partial payment, add the due amount to balance
+                        // Even if full payment (cash), we might want to track volume, but balance change is 0
+                        // Logic defined: dueAmount is what remains to be paid.
+                        // If paymentType is 'credit', dueAmount = total usually.
+
+                        // We rely on dueAmount passed from UI. 
+                        // If dueAmount is undefined, assume 0 change (fully paid).
+
+                        const due = saleData.dueAmount || 0;
+                        if (due > 0) {
+                            await db.customers.update(customer.id, {
+                                currentBalance: customer.currentBalance + due
+                            });
+                        }
+                    }
+                }
             });
 
             // 3. Refresh stores
             await get().fetchSales();
             await useProductStore.getState().fetchProducts();
+            await import('./customer-store').then(m => m.useCustomerStore.getState().fetchCustomers());
         } catch (error) {
             console.error('Failed to process sale:', error);
             throw error; // Re-throw to handle in UI (e.g., show toast)

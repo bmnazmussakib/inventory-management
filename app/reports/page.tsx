@@ -4,6 +4,7 @@ import { useEffect, useMemo } from 'react';
 import { useSalesStore } from '@/stores/sales-store';
 import { useProductStore } from '@/stores/product-store';
 import { useCategoryStore } from '@/stores/category-store';
+import { useExpenseStore } from '@/stores/expense-store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Table,
@@ -35,6 +36,7 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip,
+    Legend,
     ResponsiveContainer,
     Cell
 } from 'recharts';
@@ -47,54 +49,118 @@ export default function ReportsPage() {
     const { products, fetchProducts } = useProductStore();
     // const { categories, fetchCategories } = useCategoryStore();
     const { sales, fetchSales } = useSalesStore();
+    const { expenses, fetchExpenses } = useExpenseStore();
 
     useEffect(() => {
         fetchSales();
         fetchProducts();
+        fetchExpenses();
         // fetchCategories();
-    }, [fetchSales, fetchProducts]);
+    }, [fetchSales, fetchProducts, fetchExpenses]);
 
     // KPI Calculations
     const stats = useMemo(() => {
-        const todayPrice = sales
-            .filter(s => new Date(s.date).toDateString() === new Date().toDateString())
-            .reduce((sum, s) => sum + s.total, 0);
+        // Filter for current month
+        const now = new Date();
+        const currentMonthSales = sales.filter(s => {
+            const d = new Date(s.date);
+            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        });
 
-        const todayCount = sales
-            .filter(s => new Date(s.date).toDateString() === new Date().toDateString())
-            .length;
+        const currentMonthExpenses = expenses.filter(e => {
+            const d = new Date(e.date);
+            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        });
 
-        const currentMonthSales = sales
-            .filter(s => new Date(s.date).getMonth() === new Date().getMonth())
-            .reduce((sum, s) => sum + s.total, 0);
+        // Calculate Totals
+        const totalRevenue = currentMonthSales.reduce((sum, s) => sum + s.total, 0);
+        const totalExpenses = currentMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
 
-        // Dummy profit calculation (assuming 20% margin for demo if costPrice is missing)
-        const todayProfit = todayPrice * 0.2;
+        // Calculate COGS (Cost of Goods Sold) for current month
+        let totalCOGS = 0;
+        currentMonthSales.forEach(sale => {
+            sale.items.forEach(item => {
+                const product = products.find(p => p.id === item.productId);
+                const buyPrice = product?.buyPrice || 0; // Fallback to current buy price
+                totalCOGS += buyPrice * item.qty;
+            });
+        });
+
+        const grossProfit = totalRevenue - totalCOGS;
+        const netProfit = grossProfit - totalExpenses;
 
         return [
             {
-                title: t('stats.todaysSale'),
-                value: formatPrice(todayPrice, locale),
-                subValue: `${locale === 'bn' ? bnNumber(todayCount) : todayCount} orders`,
-                change: "+12%",
+                title: 'Total Revenue (Month)',
+                value: formatPrice(totalRevenue, locale),
+                subValue: `${currentMonthSales.length} orders`,
+                change: "Income",
                 sentiment: "positive"
             },
             {
-                title: 'Today\'s Profit',
-                value: formatPrice(todayProfit, locale),
-                subValue: "Avg margin 20%",
-                change: "+5%",
-                sentiment: "positive"
+                title: 'Total Expenses (Month)',
+                value: formatPrice(totalExpenses, locale),
+                subValue: `${currentMonthExpenses.length} records`,
+                change: "Outgoing",
+                sentiment: "negative"
             },
             {
-                title: 'Monthly Sales',
-                value: formatPrice(currentMonthSales, locale),
-                subValue: "vs last month",
-                change: "+8%",
-                sentiment: "positive"
+                title: 'Net Profit (Month)',
+                value: formatPrice(netProfit, locale),
+                subValue: `Gross: ${formatPrice(grossProfit, locale)}`,
+                change: netProfit >= 0 ? "Profit" : "Loss",
+                sentiment: netProfit >= 0 ? "positive" : "negative"
             }
         ];
-    }, [sales, locale, t]);
+    }, [sales, products, expenses, locale, t]);
+
+    // Financial Overview Data (Last 6 Months)
+    const financialData = useMemo(() => {
+        const data = [];
+        const monthNames = locale === 'bn'
+            ? ['জানু', 'ফেব', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর']
+            : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date();
+            d.setMonth(d.getMonth() - i);
+            const monthIdx = d.getMonth();
+            const year = d.getFullYear();
+
+            // Filter data for this month
+            const monthlySales = sales.filter(s => {
+                const date = new Date(s.date);
+                return date.getMonth() === monthIdx && date.getFullYear() === year;
+            });
+
+            const monthlyExpenses = expenses.filter(e => {
+                const date = new Date(e.date);
+                return date.getMonth() === monthIdx && date.getFullYear() === year;
+            });
+
+            const revenue = monthlySales.reduce((sum, s) => sum + s.total, 0);
+            const expense = monthlyExpenses.reduce((sum, e) => sum + e.amount, 0);
+
+            // Calculate COGS
+            let cogs = 0;
+            monthlySales.forEach(sale => {
+                sale.items.forEach(item => {
+                    const product = products.find(p => p.id === item.productId);
+                    cogs += (product?.buyPrice || 0) * item.qty;
+                });
+            });
+
+            const profit = revenue - cogs - expense;
+
+            data.push({
+                name: `${monthNames[monthIdx]}`,
+                revenue,
+                expense,
+                profit
+            });
+        }
+        return data;
+    }, [sales, expenses, products, locale]);
 
     // Sales Trend Data (Last 7 Days)
     const trendData = useMemo(() => {
@@ -185,25 +251,15 @@ export default function ReportsPage() {
 
                 {/* Left Column (2/3) */}
                 <div className="lg:col-span-2 space-y-6">
-                    {/* Sales Trend Chart */}
+                    {/* Financial Overview Chart */}
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
                         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                            <h3 className="font-bold text-base text-slate-900 dark:text-white">Sales Trend</h3>
-                            <div className="flex gap-1">
-                                <button className="px-2 py-1 text-[10px] font-bold rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">7 Days</button>
-                                <button className="px-2 py-1 text-[10px] font-bold rounded text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800">30 Days</button>
-                            </div>
+                            <h3 className="font-bold text-base text-slate-900 dark:text-white">Monthly Financial Overview</h3>
                         </div>
                         <div className="p-6">
-                            <div className="mb-6">
-                                <p className="text-xs text-slate-400 mb-1">Total Sales (Last 7 Days)</p>
-                                <h4 className="text-2xl font-bold text-slate-900 dark:text-white">
-                                    {formatPrice(trendData.reduce((a, b) => a + b.value, 0), locale)}
-                                </h4>
-                            </div>
-                            <div className="h-64 w-full">
+                            <div className="h-80 w-full">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={trendData}>
+                                    <BarChart data={financialData}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" opacity={0.5} />
                                         <XAxis
                                             dataKey="name"
@@ -211,6 +267,12 @@ export default function ReportsPage() {
                                             tickLine={false}
                                             tick={{ fontSize: 12, fill: '#94A3B8', fontWeight: 600 }}
                                             dy={10}
+                                        />
+                                        <YAxis
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fontSize: 12, fill: '#94A3B8' }}
+                                            tickFormatter={(value) => `${value / 1000}k`}
                                         />
                                         <Tooltip
                                             cursor={{ fill: 'transparent' }}
@@ -220,10 +282,33 @@ export default function ReportsPage() {
                                                 border: '1px solid #E2E8F0',
                                                 boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                                             }}
+                                            formatter={(value: number) => formatPrice(value, locale)}
                                         />
-                                        <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                                        <Legend />
+                                        <Bar dataKey="revenue" name="Revenue" fill="#1a79bc" radius={[4, 4, 0, 0]} />
+                                        <Bar dataKey="expense" name="Expense" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                                        <Bar dataKey="profit" name="Net Profit" fill="#10b981" radius={[4, 4, 0, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Sales Trend Chart (Previous - keeping for detail) */}
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+                        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                            <h3 className="font-bold text-base text-slate-900 dark:text-white">Daily Sales Trend</h3>
+                        </div>
+                        <div className="p-6">
+                            <div className="h-48 w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={trendData}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" opacity={0.5} />
+                                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94A3B8' }} />
+                                        <Tooltip cursor={{ fill: 'transparent' }} />
+                                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                                             {trendData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill="#1a79bc" fillOpacity={0.8 + (index * 0.02)} />
+                                                <Cell key={`cell-${index}`} fill="#94a3b8" />
                                             ))}
                                         </Bar>
                                     </BarChart>

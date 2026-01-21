@@ -3,7 +3,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useProductStore } from '@/stores/product-store';
 import { useSalesStore } from '@/stores/sales-store';
-import { useCategoryStore } from '@/stores/category-store'; // Added for category management
+import { useCategoryStore } from '@/stores/category-store';
+import { useCustomerStore } from '@/stores/customer-store'; // Added for customer link
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -39,6 +40,10 @@ import {
     DialogTitle,
     DialogFooter
 } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { CustomerSelect } from '@/components/sales/CustomerSelect';
+import { AddCustomerDialog } from '@/components/customers/add-customer-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from 'next/link';
 
@@ -76,6 +81,13 @@ export default function SalesPage() {
     const [billDiscountType, setBillDiscountType] = useState<'percent' | 'amount'>('amount');
     const [billDiscountValue, setBillDiscountValue] = useState(0);
     const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'mobile'>('cash');
+
+    // Credit Sale State
+    const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
+    const [isCreditMode, setIsCreditMode] = useState(false);
+    const [paidAmount, setPaidAmount] = useState<number | null>(null); // Amount paid instantly
+    const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
+
 
     useEffect(() => {
         fetchProducts();
@@ -172,7 +184,16 @@ export default function SalesPage() {
 
     const handleCheckout = async () => {
         if (cart.length === 0) return;
+
+        if (isCreditMode && !selectedCustomerId) {
+            toast.error("Please select a customer for credit sale");
+            return;
+        }
+
         try {
+            const actualPaidAmount = isCreditMode ? (paidAmount ?? 0) : total;
+            const dueAmount = isCreditMode ? (total - actualPaidAmount) : 0;
+
             const saleData = {
                 date: new Date().toISOString(),
                 items: cart.map(item => ({
@@ -187,13 +208,21 @@ export default function SalesPage() {
                 discount: billDiscountAmount,
                 tax: (Math.max(0, subtotal - billDiscountAmount) * taxRate) / 100,
                 total,
-                paymentMethod
+                paymentMethod: isCreditMode ? 'credit' : paymentMethod,
+                customerId: selectedCustomerId || undefined,
+                dueAmount: dueAmount > 0 ? dueAmount : undefined,
+                paidAmount: actualPaidAmount
             };
             await addSale(saleData);
             setLastSale(saleData);
             setIsReceiptModalOpen(true);
             setCart([]);
             setBillDiscountValue(0);
+            setPaidAmount(null);
+            // Don't reset customer/credit mode instantly so user can do another txn if needed, or reset?
+            // Better to reset for next fresh sale
+            setIsCreditMode(false);
+            setSelectedCustomerId(null);
             toast.success(nt('saveSuccess'));
 
             // Check for low stock notification
@@ -347,6 +376,41 @@ export default function SalesPage() {
                     </Button>
                 </div>
 
+                {/* Customer Section */}
+                <div className="px-4 pt-3 pb-0 space-y-3">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                            <Switch
+                                id="credit-mode"
+                                checked={isCreditMode}
+                                onCheckedChange={(checked) => {
+                                    setIsCreditMode(checked);
+                                    if (checked) setPaidAmount(0);
+                                    else setPaidAmount(null);
+                                }}
+                            />
+                            <Label htmlFor="credit-mode" className="font-bold text-slate-700 dark:text-slate-200 cursor-pointer">
+                                Credit / বাকি
+                            </Label>
+                        </div>
+                        {isCreditMode && (
+                            <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">
+                                Due: {formatPrice(Math.max(0, total - (paidAmount || 0)), locale)}
+                            </span>
+                        )}
+                    </div>
+
+                    {isCreditMode && (
+                        <div className="animate-in slide-in-from-top-2 duration-200">
+                            <CustomerSelect
+                                value={selectedCustomerId}
+                                onChange={setSelectedCustomerId}
+                                onAddNew={() => setIsAddCustomerOpen(true)}
+                            />
+                        </div>
+                    )}
+                </div>
+
                 {/* Cart Items */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
                     {cart.map(item => (
@@ -427,11 +491,26 @@ export default function SalesPage() {
 
                     <Tabs value={paymentMethod} onValueChange={(v: any) => setPaymentMethod(v)} className="w-full">
                         <TabsList className="grid w-full grid-cols-3">
-                            <TabsTrigger value="cash" className="text-xs">Cash</TabsTrigger>
-                            <TabsTrigger value="card" className="text-xs">Card</TabsTrigger>
-                            <TabsTrigger value="mobile" className="text-xs">Mobile</TabsTrigger>
+                            <TabsTrigger value="cash" disabled={isCreditMode} className="text-xs">Cash</TabsTrigger>
+                            <TabsTrigger value="card" disabled={isCreditMode} className="text-xs">Card</TabsTrigger>
+                            <TabsTrigger value="mobile" disabled={isCreditMode} className="text-xs">Mobile</TabsTrigger>
                         </TabsList>
                     </Tabs>
+
+                    {isCreditMode && (
+                        <div className="space-y-1 pt-1">
+                            <div className="flex justify-between text-sm">
+                                <Label>Paid Now (জমা)</Label>
+                            </div>
+                            <Input
+                                type="number"
+                                placeholder="Enter paid amount"
+                                value={paidAmount === null ? '' : paidAmount}
+                                onChange={(e) => setPaidAmount(Number(e.target.value))}
+                                className="font-bold text-green-600"
+                            />
+                        </div>
+                    )}
 
                     <Button
                         size="lg"
@@ -463,6 +542,11 @@ export default function SalesPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <AddCustomerDialog
+                open={isAddCustomerOpen}
+                onOpenChange={setIsAddCustomerOpen}
+            />
         </div>
     );
 }

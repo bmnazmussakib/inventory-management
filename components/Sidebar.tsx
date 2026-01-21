@@ -13,7 +13,10 @@ import {
     Store,
     PlusCircle,
     Menu,
-    Layers
+    Layers,
+    ShoppingBasket, // Changed from ShoppingBag to fix HMR glitch
+    Factory,
+    Banknote
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -45,6 +48,24 @@ const navItems = [
         subtitle: '(Categories)',
         href: '/categories',
         icon: Layers,
+    },
+    {
+        title: 'ক্রয়',
+        subtitle: '(Purchases)',
+        href: '/purchases',
+        icon: ShoppingBasket,
+    },
+    {
+        title: 'খরচ',
+        subtitle: '(Expenses)',
+        href: '/expenses',
+        icon: Banknote,
+    },
+    {
+        title: 'সাপ্লায়ার',
+        subtitle: '(Suppliers)',
+        href: '/suppliers',
+        icon: Factory,
     },
     {
         title: 'রিপোর্ট',

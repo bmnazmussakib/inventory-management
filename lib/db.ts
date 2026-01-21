@@ -7,6 +7,15 @@ export interface Category {
     description?: string;
 }
 
+export interface Customer {
+    id?: number;
+    name: string;
+    phone: string;
+    address?: string;
+    notes?: string;
+    currentBalance: number; // +ve means customer owes shop (credit), -ve means shop owes customer (advance)
+}
+
 export interface Product {
     id?: number;
     name: string;
@@ -41,20 +50,96 @@ export interface Sale {
     }>;
     subtotal: number;
     discount: number; // Bill level discount amount
+    tax?: number;
     total: number;
+    customerId?: number;
+    paymentType?: 'cash' | 'credit' | 'card' | 'mobile'; // Updated from just 'cash' | 'credit' implicitly
+    dueAmount?: number; // If credit sale, how much is due
+}
+
+export interface Payment {
+    id?: number;
+    customerId: number;
+    amount: number;
+    date: string;
+    type: 'received' | 'given'; // received from customer, given to customer (refund/return)
+    notes?: string;
+}
+
+export interface Supplier {
+    id?: number;
+    name: string;
+    phone: string;
+    address?: string;
+    notes?: string;
+    currentBalance: number; // +ve: Shop owes Supplier (Payable), -ve: Supplier owes Shop (Advance)
+}
+
+export interface Purchase {
+    id?: number;
+    date: string;
+    supplierId: number;
+    supplierName?: string;
+    items: Array<{
+        productId: number;
+        name: string;
+        qty: number;
+        buyPrice: number;
+        total: number;
+    }>;
+    grandTotal: number;
+    paidAmount: number;
+    dueAmount: number;
+    notes?: string;
+}
+
+export interface SupplierPayment {
+    id?: number;
+    supplierId: number;
+    amount: number;
+    date: string;
+    type: 'paid' | 'received_refund'; // paid to supplier
+    notes?: string;
+}
+
+export interface Expense {
+    id?: number;
+    date: string;
+    category: string;
+    amount: number;
+    description?: string;
+    paymentMethod: 'cash' | 'card' | 'mobile' | 'bank_transfer';
 }
 
 export class InventoryDB extends Dexie {
     products!: Table<Product>;
     sales!: Table<Sale>;
     categories!: Table<Category>;
+    customers!: Table<Customer>;
+    payments!: Table<Payment>;
+    suppliers!: Table<Supplier>;
+    purchases!: Table<Purchase>;
+    supplier_payments!: Table<SupplierPayment>;
+    expenses!: Table<Expense>;
 
     constructor() {
         super('InventoryDB');
-        this.version(6).stores({
+        this.version(7).stores({
             products: '++id, name, category, categoryId, brand, ean, internalId, expiryDate, discountPercent, scheme',
-            sales: '++id, date, total, discount',
-            categories: '++id, name, parentId'
+            sales: '++id, date, total, discount, customerId, paymentType',
+            categories: '++id, name, parentId',
+            customers: '++id, name, phone, currentBalance',
+            payments: '++id, customerId, date, type'
+        });
+
+        this.version(8).stores({
+            suppliers: '++id, name, phone, currentBalance',
+            purchases: '++id, date, supplierId, grandTotal',
+            supplier_payments: '++id, supplierId, date'
+        });
+
+        this.version(9).stores({
+            expenses: '++id, date, category'
         });
     }
 }
