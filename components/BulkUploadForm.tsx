@@ -45,7 +45,7 @@ export function BulkUploadForm() {
                 rawData = await parseExcel(selectedFile);
             }
 
-            const { valid, errors: validationErrors } = validateProducts(rawData);
+            const { valid, errors: validationErrors } = await validateProducts(rawData);
             setPreviewData(valid);
             setErrors(validationErrors);
 
