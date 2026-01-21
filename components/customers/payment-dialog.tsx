@@ -19,7 +19,7 @@ import * as z from 'zod';
 import { type Customer, type Payment } from '@/lib/db';
 
 const paymentSchema = z.object({
-    amount: z.coerce.number().min(1, 'Amount must be greater than 0'),
+    amount: z.number().min(1, 'Amount must be greater than 0'),
     type: z.enum(['received', 'given']),
     date: z.string(),
     notes: z.string().optional(),
@@ -124,7 +124,7 @@ export function PaymentDialog({ customer, open: controlledOpen, onOpenChange: se
 
                     <div className="grid gap-2">
                         <Label htmlFor="amount">Amount</Label>
-                        <Input type="number" id="amount" {...register('amount')} placeholder="0.00" className="text-lg font-bold" />
+                        <Input type="number" id="amount" {...register('amount', { valueAsNumber: true })} placeholder="0.00" className="text-lg font-bold" />
                         {errors.amount && <span className="text-red-500 text-xs">{errors.amount.message}</span>}
                     </div>
 

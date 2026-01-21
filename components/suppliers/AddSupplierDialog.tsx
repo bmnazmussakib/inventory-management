@@ -23,7 +23,7 @@ const supplierSchema = z.object({
     phone: z.string().min(1, 'Phone is required'),
     address: z.string().optional(),
     notes: z.string().optional(),
-    currentBalance: z.number().default(0),
+    currentBalance: z.number(),
 });
 
 type SupplierFormValues = z.infer<typeof supplierSchema>;

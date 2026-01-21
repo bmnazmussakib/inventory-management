@@ -48,7 +48,7 @@ import { Expense } from "@/lib/db";
 const formSchema = z.object({
     date: z.date(),
     category: z.string().min(1, "Category is required"),
-    amount: z.coerce.number().min(0.01, "Amount must be greater than 0"),
+    amount: z.number().min(0.01, "Amount must be greater than 0"),
     description: z.string().optional(),
     paymentMethod: z.enum(["cash", "card", "mobile", "bank_transfer"]),
 });
@@ -242,7 +242,7 @@ export function AddExpenseDialog({
                                     <FormItem>
                                         <FormLabel>Amount</FormLabel>
                                         <FormControl>
-                                            <Input type="number" step="0.01" {...field} />
+                                            <Input type="number" step="0.01" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
