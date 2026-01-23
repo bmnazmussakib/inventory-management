@@ -50,7 +50,7 @@ export const validateProducts = async (data: any[]): Promise<{ valid: Product[],
     const categories = await db.categories.toArray();
     const categoryMap = new Map(categories.map(c => [c.name.toLowerCase(), c.id]));
 
-    const fieldMapping: Record<string, keyof Product> = {
+    const fieldMapping: Record<string, keyof Product | 'parentCategory'> = {
         'Name': 'name',
         'নাম': 'name',
         'name': 'name',
@@ -63,6 +63,9 @@ export const validateProducts = async (data: any[]): Promise<{ valid: Product[],
         'Category': 'category',
         'ক্যাটাগরি': 'category',
         'category': 'category',
+        'Parent Category': 'parentCategory',
+        'প্যারেন্ট ক্যাটাগরি': 'parentCategory',
+        'parentCategory': 'parentCategory',
         'Price': 'buyPrice',
         'Buy Price': 'buyPrice',
         'ক্রয় মূল্য': 'buyPrice',
@@ -94,48 +97,91 @@ export const validateProducts = async (data: any[]): Promise<{ valid: Product[],
         'internalId': 'internalId',
     };
 
-    data.forEach((row, index) => {
-        const product: Partial<Product> = {};
+    // Helper to resolve or create category
+    const resolveCategory = async (catName: string, parentName?: string): Promise<number | undefined> => {
+        if (!catName) return undefined;
+
+        const normalizedName = catName.trim().toLowerCase();
+
+        // Check cache/map first
+        if (categoryMap.has(normalizedName)) {
+            return categoryMap.get(normalizedName);
+        }
+
+        // Handle parent if provided
+        let parentId: number | undefined = undefined;
+        if (parentName) {
+            parentId = await resolveCategory(parentName);
+        }
+
+        // Try searching in DB explicitly (to be sure)
+        let existing = await db.categories.where('name').equals(catName.trim()).first();
+        if (existing) {
+            categoryMap.set(normalizedName, existing.id);
+            return existing.id;
+        }
+
+        // Create new category
+        try {
+            const newId = await db.categories.add({
+                name: catName.trim(),
+                parentId: parentId,
+                description: "Automatically created during bulk upload"
+            });
+            categoryMap.set(normalizedName, newId);
+            return newId;
+        } catch (err) {
+            console.error('Failed to create category:', catName, err);
+            return undefined;
+        }
+    };
+
+    for (const [index, row] of data.entries()) {
+        const product: any = {};
         const rowNum = index + 1;
+        let rowParentCategory: string | undefined = undefined;
 
-        // Map fields and ignore "Index"
+        // Map fields
         Object.keys(row).forEach(key => {
-            if (key.trim().toLowerCase() === 'index') return;
+            const trimmedKey = key.trim();
+            if (trimmedKey.toLowerCase() === 'index') return;
 
-            const mappedKey = fieldMapping[key.trim()];
+            const mappedKey = fieldMapping[trimmedKey] || fieldMapping[trimmedKey.toLowerCase()];
             if (mappedKey) {
                 let value = row[key];
-
-                // Convert EAN to string to avoid scientific notation
                 if (mappedKey === 'ean' && value !== undefined && value !== null) {
                     value = value.toString();
                 }
 
-                product[mappedKey] = value;
+                if (mappedKey === 'parentCategory') {
+                    rowParentCategory = value?.toString();
+                } else {
+                    product[mappedKey] = value;
+                }
             }
         });
 
         // Validation
         if (!product.name || typeof product.name !== 'string' || product.name.trim() === '') {
             errors.push({ row: rowNum, message: 'নাম অবশ্যই থাকতে হবে।' });
-            return;
+            continue;
         }
 
         const sellPrice = parseFloat(product.sellPrice as any);
         if (isNaN(sellPrice) || sellPrice <= 0) {
             errors.push({ row: rowNum, message: `"${product.name}": বিক্রয় মূল্য অবশ্যই ০ এর বেশি হতে হবে।` });
-            return;
+            continue;
         }
 
         const stock = parseInt(product.stock as any);
         if (isNaN(stock) || stock < 0) {
             errors.push({ row: rowNum, message: `"${product.name}": স্টক অবশ্যই থাকতে হবে (০ বা তার বেশি)।` });
-            return;
+            continue;
         }
 
-        // Try mapping category name to ID
-        const catName = product.category?.toString().trim().toLowerCase();
-        const categoryId = catName ? categoryMap.get(catName) : undefined;
+        // Resolve category
+        const catName = product.category?.toString();
+        const categoryId = catName ? await resolveCategory(catName, rowParentCategory) : undefined;
 
         valid.push({
             name: product.name.trim(),
@@ -154,7 +200,7 @@ export const validateProducts = async (data: any[]): Promise<{ valid: Product[],
             availability: product.availability?.toString().trim(),
             internalId: product.internalId?.toString().trim(),
         });
-    });
+    }
 
     return { valid, errors };
 };

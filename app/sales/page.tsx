@@ -49,6 +49,7 @@ import Link from 'next/link';
 
 interface CartItem {
     productId: number;
+    batchId?: number;
     name: string;
     qty: number;
     price: number;
@@ -59,6 +60,8 @@ interface CartItem {
 }
 
 import { useSettingsStore } from '@/stores/settings-store';
+import { BatchSelectDialog } from '@/components/sales/BatchSelectDialog';
+import { ProductBatch } from '@/lib/db';
 
 export default function SalesPage() {
     const t = useTranslations('Sales');
@@ -87,6 +90,10 @@ export default function SalesPage() {
     const [isCreditMode, setIsCreditMode] = useState(false);
     const [paidAmount, setPaidAmount] = useState<number | null>(null); // Amount paid instantly
     const [isAddCustomerOpen, setIsAddCustomerOpen] = useState(false);
+
+    // Batch Selection State
+    const [batchSelectOpen, setBatchSelectOpen] = useState(false);
+    const [selectedProductForBatch, setSelectedProductForBatch] = useState<any>(null);
 
 
     useEffect(() => {
@@ -117,39 +124,67 @@ export default function SalesPage() {
         }
     };
 
-    const addToCart = (product: any) => {
-        if (product.stock <= 0) {
-            toast.error(nt('outOfStock', { name: product.name }));
+    const addToCart = (product: any, batch?: ProductBatch) => {
+        // 1. Check if product requires batch selection and no batch is provided
+        if (product.isBatchTracked && !batch) {
+            setSelectedProductForBatch(product);
+            setBatchSelectOpen(true);
             return;
         }
 
-        if (product.expiryDate && new Date(product.expiryDate) < new Date()) {
+        // 2. Determine stock to check against
+        const stockToCheck = batch ? batch.currentStock : product.stock;
+        const productName = batch ? `${product.name} (${batch.batchNumber})` : product.name;
+
+        if (stockToCheck <= 0) {
+            toast.error(nt('outOfStock', { name: productName }));
+            return;
+        }
+
+        if (!batch && product.expiryDate && new Date(product.expiryDate) < new Date()) {
             toast.error(nt('expired', { name: product.name }));
             return;
         }
 
-        const existing = cart.find(item => item.productId === product.id);
+        // 3. Check existing cart
+        // For batch items, we treat them as unique items based on batchId + productId
+        const existing = cart.find(item =>
+            item.productId === product.id &&
+            (batch ? item.batchId === batch.id : !item.batchId)
+        );
+
         if (existing) {
-            if (existing.qty >= product.stock) {
+            if (existing.qty >= stockToCheck) {
                 toast.warning(nt('limitReached'));
                 return;
             }
+            // Update quantity
             setCart(cart.map(item =>
-                item.productId === product.id ? { ...item, qty: item.qty + 1 } : item
+                (item.productId === product.id && (batch ? item.batchId === batch.id : !item.batchId))
+                    ? { ...item, qty: item.qty + 1 }
+                    : item
             ));
         } else {
             const discountPercent = product.discountPercent || 0;
             const discountedPrice = product.sellPrice * (1 - discountPercent / 100);
             setCart([...cart, {
                 productId: product.id!,
-                name: product.name,
+                batchId: batch?.id,
+                name: productName,
                 qty: 1,
                 price: product.sellPrice,
-                stock: product.stock,
+                stock: stockToCheck,
                 discountPercent: discountPercent,
                 discountedPrice: discountedPrice,
                 scheme: product.scheme
             }]);
+        }
+    };
+
+    const handleBatchSelect = (batch: ProductBatch) => {
+        if (selectedProductForBatch) {
+            addToCart(selectedProductForBatch, batch);
+            // selection is handled inside addToCart
         }
     };
 
@@ -546,6 +581,14 @@ export default function SalesPage() {
             <AddCustomerDialog
                 open={isAddCustomerOpen}
                 onOpenChange={setIsAddCustomerOpen}
+            />
+
+            <BatchSelectDialog
+                open={batchSelectOpen}
+                onOpenChange={setBatchSelectOpen}
+                productId={selectedProductForBatch?.id || null}
+                productName={selectedProductForBatch?.name || ''}
+                onSelectBatch={handleBatchSelect}
             />
         </div>
     );

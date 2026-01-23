@@ -35,8 +35,22 @@ export const useSalesStore = create<SalesState>((set, get) => ({
                 for (const item of saleData.items) {
                     const product = await db.products.get(item.productId);
                     if (product) {
+                        // Deduct from main stock
+                        let newStock = product.stock - item.qty;
+
+                        // Deduct from specific batch if batchId is updated
+                        if (item.batchId) {
+                            const batch = await db.product_batches.get(item.batchId);
+                            if (batch) {
+                                await db.product_batches.update(item.batchId, {
+                                    currentStock: batch.currentStock - item.qty
+                                });
+                            }
+                        }
+
+                        // Update product total stock
                         await db.products.update(item.productId, {
-                            stock: product.stock - item.qty
+                            stock: newStock
                         });
                     }
                 }

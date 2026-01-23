@@ -32,6 +32,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { Button } from '@/components/ui/button';
+import { ExpiryAlertCard } from '@/components/dashboard/ExpiryAlertCard';
 
 export default function Dashboard() {
   const t = useTranslations('Dashboard');
@@ -260,6 +261,8 @@ export default function Dashboard() {
 
         {/* Right Column (1/3) */}
         <div className="space-y-8">
+          <ExpiryAlertCard />
+
           {/* Stock Alerts */}
           <section className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
             <div className="flex items-center gap-2 mb-6">

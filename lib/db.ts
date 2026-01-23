@@ -16,6 +16,20 @@ export interface Customer {
     currentBalance: number; // +ve means customer owes shop (credit), -ve means shop owes customer (advance)
 }
 
+export interface ProductBatch {
+    id?: number;
+    productId: number;
+    batchNumber: string;
+    lotNumber?: string;
+    purchaseDate: string;
+    expiryDate: string;
+    supplierId?: number;
+    initialStock: number;
+    currentStock: number;
+    buyPrice: number;
+    notes?: string;
+}
+
 export interface Product {
     id?: number;
     name: string;
@@ -26,7 +40,7 @@ export interface Product {
     discountPercent?: number; // 0-100
     scheme?: string; // e.g. "Buy 2 get 1 free"
     currency?: string;
-    stock: number;
+    stock: number; // Total stock (sum of batches if tracked)
     category: string;
     categoryId?: number;
     reorderLevel: number;
@@ -35,7 +49,8 @@ export interface Product {
     size?: string;
     availability?: string;
     internalId?: string;
-    expiryDate?: string | null;
+    expiryDate?: string | null; // Deprecated for batch-tracked items
+    isBatchTracked?: boolean;
 }
 
 export interface Sale {
@@ -43,17 +58,19 @@ export interface Sale {
     date: string;
     items: Array<{
         productId: number;
+        batchId?: number; // Track which batch this item came from
         name: string;
         qty: number;
         price: number;
         itemDiscount?: number; // Discount per item if any
+        scheme?: string;
     }>;
     subtotal: number;
     discount: number; // Bill level discount amount
     tax?: number;
     total: number;
     customerId?: number;
-    paymentType?: 'cash' | 'credit' | 'card' | 'mobile'; // Updated from just 'cash' | 'credit' implicitly
+    paymentType?: 'cash' | 'credit' | 'card' | 'mobile';
     dueAmount?: number; // If credit sale, how much is due
 }
 
@@ -113,6 +130,7 @@ export interface Expense {
 
 export class InventoryDB extends Dexie {
     products!: Table<Product>;
+    product_batches!: Table<ProductBatch>;
     sales!: Table<Sale>;
     categories!: Table<Category>;
     customers!: Table<Customer>;
@@ -140,6 +158,11 @@ export class InventoryDB extends Dexie {
 
         this.version(9).stores({
             expenses: '++id, date, category'
+        });
+
+        this.version(10).stores({
+            products: '++id, name, category, categoryId, brand, ean, internalId, expiryDate, discountPercent, scheme, isBatchTracked',
+            product_batches: '++id, productId, batchNumber, expiryDate, supplierId'
         });
     }
 }

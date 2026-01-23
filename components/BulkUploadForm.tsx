@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Upload, FileType, CheckCircle2, AlertCircle, Trash2, Database, Loader2 } from 'lucide-react';
+import { useCategoryStore } from '@/stores/category-store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,7 @@ export function BulkUploadForm() {
     const [previewData, setPreviewData] = useState<Product[]>([]);
     const [errors, setErrors] = useState<ValidationError[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { fetchCategories } = useCategoryStore();
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0];
@@ -45,9 +47,18 @@ export function BulkUploadForm() {
                 rawData = await parseExcel(selectedFile);
             }
 
+            // Localized toast for processing categories
+            toast.info("ক্যাটাগরি অটো তৈরি হচ্ছে...", {
+                description: "প্যারেন্ট ক্যাটাগরি এবং সাব-ক্যাটাগরি অনুসন্ধান ও যোগ করা হচ্ছে।",
+                duration: 4000
+            });
+
             const { valid, errors: validationErrors } = await validateProducts(rawData);
             setPreviewData(valid);
             setErrors(validationErrors);
+
+            // Fetch categories again in case new ones were created during validation
+            await fetchCategories();
 
             if (validationErrors.length > 0) {
                 toast.warning(`${toBanglaNumber(validationErrors.length)}টি ফিল্ডে সমস্যা পাওয়া গেছে।`);
@@ -82,6 +93,9 @@ export function BulkUploadForm() {
             if (duplicatesCount > 0) {
                 toast.info(`${toBanglaNumber(duplicatesCount)}টি পণ্য আগে থেকেই ছিল বলে স্কিপ করা হয়েছে।`);
             }
+
+            // Refresh categories one last time to be sure
+            await fetchCategories();
 
             // Reset
             setFile(null);

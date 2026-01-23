@@ -22,6 +22,7 @@ import { bnNumber, formatPrice } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { BulkUploadDialog } from '@/components/BulkUploadDialog';
+import { BatchList } from '@/components/products/BatchList';
 
 export default function ProductList() {
     const t = useTranslations('Products'); // Assuming keys exist or fallback
@@ -165,9 +166,11 @@ export default function ProductList() {
                                                 {getCategoryName(product.categoryId)}
                                             </span>
                                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button className="p-1.5 rounded hover:bg-primary/10 hover:text-primary transition-colors">
-                                                    <Edit className="h-4 w-4" />
-                                                </button>
+                                                <Link href={`/products/edit/${product.id}`}>
+                                                    <button className="p-1.5 rounded hover:bg-primary/10 hover:text-primary transition-colors">
+                                                        <Edit className="h-4 w-4" />
+                                                    </button>
+                                                </Link>
                                                 <button
                                                     className="p-1.5 rounded hover:bg-red-100 hover:text-red-500 transition-colors"
                                                     onClick={() => deleteProduct(product.id as number)}
@@ -180,6 +183,13 @@ export default function ProductList() {
                                             {product.name}
                                         </h3>
                                         <p className="text-sm text-slate-500 mb-4 truncate">{product.description || 'No description'}</p>
+
+                                        {/* Batch View Toggle */}
+                                        {product.isBatchTracked && (
+                                            <div className="mb-4">
+                                                <BatchList productId={product.id!} />
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="flex items-end justify-between pt-4 border-t border-slate-50 dark:border-slate-700/50">
